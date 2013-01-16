@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/anythingslider.css">
+<link rel="stylesheet" href="../Images/anythingslider-ie.css">
+<link rel="stylesheet" href="../Images/jquery.autocomplete.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.MultiFile.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery.anythingslider.min.js"></script>
+<script language="javascript" src="../Script/jquery.autocomplete.pack.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+.ClearHide{display:none}
+#slider { width: 700px; height: 390px; }
+</style>
+</head>
+<body>
+<table width="100%">
+  <tr>
+	<td width="16.5%">产品类型:</td>
+	<td width="16.5%"><input type="checkbox" id="PType01" name="ProductType" value="收口袋" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType01">&nbsp;收口袋</label></td>
+	<td width="16.5%"><input type="checkbox" id="PType02" name="ProductType" value="花生盒" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType02">&nbsp;花生盒</label></td>
+	<td width="16.5%"><input type="checkbox" id="PType03" name="ProductType" value="弹簧袋" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType03">&nbsp;弹簧袋</label></td>
+	<td width="16.5%"><input type="checkbox" id="PType04" name="ProductType" value="开口袋" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType04">&nbsp;开口袋</label></td>
+	<td width="16.5%"><input type="checkbox" id="PType05" name="ProductType" value="带扣包" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType05">&nbsp;带扣包</label></td>
+  </tr>
+  <tr>
+	<td></td>
+	<td><input type="checkbox" id="PType06" name="ProductType" value="拉链包" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType06">&nbsp;拉链包</label></td>
+	<td><input type="checkbox" id="PType07" name="ProductType" value="塑胶盒" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType07">&nbsp;塑胶盒</label></td>
+	<td><input type="checkbox" id="PType08" name="ProductType" value="铁盒" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType08">&nbsp;铁盒</label></td>
+	<td><input type="checkbox" id="PType09" name="ProductType" value="光膜袋" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType09">&nbsp;光膜袋</label></td>
+	<td><input type="checkbox" id="PType10" name="ProductType" value="落地式展示架" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType10">&nbsp;落地式展示架</label></td>
+  </tr>
+  <tr>
+	<td></td>
+	<td><input type="checkbox" id="PType11" name="ProductType" value="台式展示架" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType11">&nbsp;台式展示架</label></td>
+	<td><input type="checkbox" id="PType12" name="ProductType" value="橱窗展示架" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType12">&nbsp;橱窗展示架</label></td>
+	<td><input type="checkbox" id="PType13" name="ProductType" value="橱窗展示架" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="PType13">&nbsp;橱窗展示架</label></td>
+	<td></td>
+	<td></td>
+  </tr>
+  <tr>
+	<td>使用眼镜:</td>
+	<td><input type="checkbox" id="GType01" name="GlassType" value="光学类" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GType01">&nbsp;光学类</label></td>
+	<td><input type="checkbox" id="GType02" name="GlassType" value="太阳类" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GType02">&nbsp;太阳类</label></td>
+	<td><input type="checkbox" id="GType03" name="GlassType" value="老花类" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GType03">&nbsp;老花类</label></td>
+	<td><input type="checkbox" id="GType04" name="GlassType" value="运动款" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GType04">&nbsp;运动款</label></td>
+	<td><input type="checkbox" id="GType05" name="GlassType" value="儿童类" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GType05">&nbsp;儿童类</label></td>
+  </tr>
+  <tr>
+	<td>价格区间:</td>
+	<td><input type="checkbox" id="Price01" name="Price" value="0~1" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="Price01">&nbsp;1元以下</label></td>
+	<td><input type="checkbox" id="Price02" name="Price" value="1~3" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="Price02">&nbsp;1元—3元</label></td>
+	<td><input type="checkbox" id="Price03" name="Price" value="3~5" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="Price03">&nbsp;3元—5元</label></td>
+	<td><input type="checkbox" id="Price04" name="Price" value="5~7" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="Price04">&nbsp;5元—7元</label></td>
+	<td><input type="checkbox" id="Price05" name="Price" value="7~10" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="Price05">&nbsp;7元—10元</label></td>
+  </tr>
+  <tr>
+	<td></td>
+	<td><input type="checkbox" id="Price06" name="Price" value="10~15" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="Price06">&nbsp;10元—15元</label></td>
+	<td><input type="checkbox" id="Price07" name="Price" value="15~30" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="Price07">&nbsp;15元—30元</label></td>
+	<td><input type="checkbox" id="Price08" name="Price" value="30~50" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="Price08">&nbsp;30元—50元</label></td>
+	<td><input type="checkbox" id="Price09" name="Price" value="50~10000" style="HEIGHT: 13px;WIDTH: 13px;" ><label for="Price09">&nbsp;50元以上</label></td>
+	<td></td>
+  </tr>
+  <tr>
+	<td>型号快速搜索:</td>
+	<td colspan="5"><input type="text" value="" name="Product" id="Product" /></td>
+  </tr>
+</table>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+var productList;
+var Autooptions={
+	minChars:1,
+	max:50,
+	width:250,
+//	matchContains:true,
+	formatItem:function(row,i,max){
+		return i+"/"+max+": \""+row.ProductName+"\""+" ["+row.ProductType+"]["+row.Price+"]";
+	},
+	formatMatch:function(row,i,max){return row.ProductName;},
+	formatResult:function(row){return row.ProductName;}
+};
+$(function(){
+	$.getJSON('ProductsDetails.asp?showType=getInfo&detailType=SearchData',null,initAutoComplete);
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+});
+function initAutoComplete(data){
+	productList=data;
+	$('#Product').focus().autocomplete(productList,Autooptions);
+	$('#Product').result(function(event,data,formatted){test('查询',null);});
+}
+$("#flex1").flexigrid
+	(
+	{
+	url: 'ProductsDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '单号', name : 'SerialNum', width : 50, sortable : true, align: 'left'},
+	{display: '图片', name : 'RegisterName', width : 100, sortable : true, align: 'left'},
+	{display: '产品编号', name : 'ProductId', width : 50, sortable : true, align: 'left'},
+	{display: '产品型号', name : 'ProductName', width : 50, sortable : true, align: 'left'},
+	{display: '规格', name : 'Scene', width : 100, sortable : true, align: 'left'},
+	{display: '产品分类', name : 'InDate', width : 50, sortable : true, align: 'left'},
+	{display: '眼镜类型', name : 'Position', width : 30, sortable : true, align: 'left'},
+	{display: '价格', name : 'InjuryType', width : 40, sortable : true, align: 'left'},
+	{display: '最低起订量', name : 'InsuranceFlag', width : 20, sortable : true, align: 'left'},
+	{display: '交货期', name : 'InsuranceId', width : 40, sortable : true, align: 'left'},
+	{display: '产品特性', name : 'CheckFlag', width : 40, sortable : true, align: 'left'},
+	{display: '工艺标准', name : 'Details', width : 100, sortable : true, align: 'left'},
+	{display: '生产异常', name : 'Diagnosis', width : 100, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '查询',  onpress : test},
+		{separator: true},
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	rowbinddata: false,
+	singleSelect: true,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '报价产品查询',
+	showTableToggleBtn: true,
+	width:'100%',
+	autoload: false,
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		$('#imgdiv').html('');
+		getInfo('SerialNum');
+		$('#DeliveryDate').datepick({dateFormat: 'yyyy-mm-dd'});
+		$("#addDiv").show("slow");
+		$('#fromdiv').show();
+		$('#todiv').hide();
+		$('#detailType').val('Edit');
+		$(".ClearHide").show('fast');
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要删除单号为：' + SNum + ' 的记录?')){
+				  $.post('ProductsDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#detailType').val('AddNew');
+				$('#DeliveryDate').datepick({dateFormat: 'yyyy-mm-dd'});
+				$("#addDiv").show("slow");
+				$('#fromdiv').show();
+				$('#todiv').hide();
+				$(".ClearHide").hide('fast');
+			}			
+		else if (com=='维护')
+			{
+				$('#AddForm').resetForm();
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				$('#SerialNum').val($('.trSelected', grid).attr("id").replace("row",""));
+				$('#imgdiv').html('');
+				getInfo('SerialNum');
+				$('#DeliveryDate').datepick({dateFormat: 'yyyy-mm-dd'});
+				$("#addDiv").show("slow");
+				$('#fromdiv').show();
+				$('#todiv').hide();
+				$('#detailType').val('Edit');
+				$(".ClearHide").show('fast');
+			}			
+		else if (com=='查询')
+			{
+				var GlassTypestr="";
+				$("input[name*='GlassType']:checked").each(function(){ 
+				  GlassTypestr+=$(this).val()+",";
+				});
+				var Pricestr="";
+				$("input[name*='Price']:checked").each(function(){ 
+				  Pricestr+=$(this).val()+",";
+				}) ;
+				var ProductTypestr="";
+				$("input[name*='ProductType']:checked").each(function(){ 
+				  ProductTypestr+=$(this).val()+",";
+				}) ;
+
+				$("#flex1").flexOptions({newp: 1, params:[
+					{name:"Product",value:$('#Product').val()},
+					{name:"GlassType",value:GlassTypestr},
+					{name:"Price",value:Pricestr},
+					{name:"ProductType",value:ProductTypestr}]
+				});
+				$("#flex1").flexReload();
+			}			
+	}
+
+function closead1(){
+  $("#addDiv").hide("slow");
+}
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("ProductsDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+				   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+				   if(datajson.fieldValue[0][fieldone.id]){
+					 $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+				   }
+				 }
+			   });
+		   }
+		 }
+	   });
+}
+function toSubmit(){
+  $.post('ProductsDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+    if(data.indexOf("###")==-1) alert(data);
+	else $("#flex1").flexReload();
+  });
+  $("#addDiv").hide("slow");
+}
+
+function uploadPic() { 
+    var options = { 
+        success:       showResponse  // post-submit callback 
+    }; 
+    $('#formUpload').ajaxSubmit(options); 
+	// post-submit callback 
+	function showResponse(responseText, statusText)  { 
+		$('#fromdiv').hide();
+		$('#todiv').show();
+		$('#todiv').html(responseText);
+	}
+}
+//复制图片路径
+function CopyPath2Pic(FilePath,FileSize)//
+{
+  if($('#Pic').val()=="")$('#Pic').val(FilePath);
+  else $('#Pic').val($('#Pic').val()+"＆"+FilePath);
+}
+function ShowPic(){
+  if($('.anythingSlider').length==0){
+  $('#imgdiv').html('');
+  var Pics=$('#Pic').val().split('＆');
+  if(Pics.length>1){
+    var ul = document.createElement('ul');
+	ul.id='slider';
+	for(var n=0;n<Pics.length;n++){
+	  var li = document.createElement('li');
+	  li.innerHTML='<img src="'+Pics[n]+'" alt="">';
+	  $(ul).append(li);
+	  li=null;
+	}
+	$('#imgdiv').append(ul);
+	ul=null;
+    $('#slider').anythingSlider();
+  }else if(Pics.length==1){
+    if(Pics[0]=="")$('#imgdiv').html('<font color="red">无图片</font>');
+	else
+      $('#imgdiv').html('<img src="'+Pics[0]+'" alt="" style="width:700px;height:390px;">');
+  }
+  }
+    $('#imgdiv').toggle();
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+<div class="ClearHide">
+<div style="margin-bottom:0" class="ClearHide tablemenu" ondblclick="ShowPic()">图片查看器-双击查看或者隐藏图片</div>
+<div id="imgdiv" style="margin-bottom:0; display:none">
+</div>
+</div>
+ <form id="AddForm" name="AddForm" style="margin:0; padding:0 ">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>报价信息维护</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id=editNews>
+      <tr>
+        <td height="20" align="left" width="10%">单据号：</td>
+        <td WIDTH="15%">
+		<input name="SerialNum" type="text" class="textfield" id="SerialNum" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">产品编号：</td>
+        <td  WIDTH="15%"><input name="ProductId" type="text" class="textfield" id="ProductId" value="" maxlength="100"></td>
+        <td height="20" align="left" width="10%">产品型号：</td>
+        <td  WIDTH="15%"><input name="ProductName" type="text" class="textfield" id="ProductName" value="" maxlength="100"></td>
+        <td height="20" align="left" width="10%">规格：</td>
+        <td WIDTH="15%"><input name="Model" type="text" class="textfield" id="Model" value="" maxlength="100"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">产品分类：</td>
+        <td>
+		<select name="ProductType" id="ProductType">
+		<option value="收口袋">收口袋</option>
+		<option value="花生盒">花生盒</option>
+		<option value="弹簧袋">弹簧袋</option>
+		<option value="开口袋">开口袋</option>
+		<option value="带扣包">带扣包</option>
+		<option value="拉链包">拉链包</option>
+		<option value="塑胶盒">塑胶盒</option>
+		<option value="铁盒">铁盒</option>
+		<option value="光膜袋">光膜袋</option>
+		<option value="落地式展示架">落地式展示架</option>
+		<option value="台式展示架">台式展示架</option>
+		<option value="橱窗展示架">橱窗展示架</option>
+		<option value="珠宝盒">珠宝盒</option>
+		</select>
+		</td>
+        <td height="20" align="left">眼镜类型：</td>
+        <td>
+		<select name="GlassType" id="GlassType">
+		<option value="光学类">光学类</option>
+		<option value="太阳类">太阳类</option>
+		<option value="老花类">老花类</option>
+		<option value="运动款">运动款</option>
+		<option value="儿童类">儿童类</option>
+		</select>
+		</td>
+        <td height="20" align="left">价格：</td>
+        <td><input name="Price" type="text" class="textfield" id="Price"  value="" maxlength="100" onblur="return checkNum(this)"></td>
+        <td height="20" align="left">起订量：</td>
+        <td><input name="MiniQty" type="text" class="textfield" id="MiniQty"  value="" maxlength="100" onblur="return checkNum(this)"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">交货期：</td>
+        <td><input name="DeliveryDate" type="text" class="textfield" id="DeliveryDate"  value="" maxlength="100" onBlur="return checkDate(this)"></td>
+        <td height="20" align="left">产品特性：</td>
+        <td colspan="5"><input name="Feature" type="text" style="width:100% " class="textfield" id="Feature"  value="" maxlength="300"></td>
+      </tr>
+      <tr >
+        <td height="50" align="left">工艺标准：</td>
+        <td colspan="7">
+	  <textarea name="Standard" id="Standard" style="width:90%; height:50px; "></textarea>
+	  </td>
+      </tr>
+      <tr >
+        <td height="50" align="left">生产异常：</td>
+        <td colspan="7">
+	  <textarea name="Abnormal" id="Abnormal" style="width:90%; height:50px; "></textarea>
+	  </td>
+      </tr>
+      <tr >
+        <td height="50" align="left">详细说明：</td>
+        <td colspan="7">
+	  <textarea name="Remark" id="Remark" style="width:90%; height:50px; "></textarea>
+	  </td>
+      </tr>
+      <tr >
+        <td height="50" align="left">图片：</td>
+        <td colspan="7">
+	  <textarea name="Pic" id="Pic" style="width:90%; height:50px; "></textarea>
+	  </td>
+      </tr>
+      <tr>
+        <td height="20" align="left">登记人：</td>
+        <td><input name="Biller" type="text" class="textfield" id="Biller"  value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left">登记日期：</td>
+        <td><input name="BillDate" type="text" class="textfield" id="BillDate"  value="" maxlength="100" readonly="true"></td>
+        <td colspan="4">
+		</td>
+      </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" colspan="8" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input name="submitSaveAdd" type="button" class="button"  value="保存" style="WIDTH: 80;"  onClick="toSubmit(this)">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="closead1()">&nbsp;
+	  </td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+  <form action="../Include/UpFileSave.asp" method="post" enctype="multipart/form-data" name="formUpload" id="formUpload"  style="margin:0; padding:0 ">
+  <div id="fromdiv">
+	<TABLE BORDER=0>
+  <tr>
+    <td bgcolor="#EBF2F9" id="callbackHtml">
+	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td width="60" height="30" nowrap>选择文件：</td>
+        <td><input name="FromFile" type="file" id="FromFile" size="41" class="multi" accept="gif|jpg|bmp|jpeg" maxlength="10"/></td>
+      </tr>
+      <tr>
+        <td height="36" colspan="2" align="center" valign="bottom">
+	<input type="hidden" name="SaveToPath" id="SaveToPath" value="../Upload/Products/">
+	<input type="hidden" name="detailType" value="test">
+          &nbsp;<input name="Submit" type="button" class="button" value=" 上传 " onClick="uploadPic()">
+		  </td>
+        </tr>
+    </table>
+	</td>
+  </tr>
+	</TABLE>
+  </div>
+  <div id="todiv" style="display:none "></div>
+	
+</FORM>
+
+</div>
+</BODY>
+</HTML>

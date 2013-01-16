@@ -1,0 +1,520 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<link rel="stylesheet" href="../Images/jquery.autocomplete.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<script language="javascript" src="../Script/jquery.autocomplete.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/xheditor-zh-cn.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+var productList;
+var Autooptions={
+	minChars:0,
+	max:500,
+	width:280,
+	height:200,
+	mustMatch: true,
+	matchContains:true,
+	formatItem:function(row,i,max){
+		return row.Chengpin+"\""+" ["+row.Gongxu+"]["+row.Zongji+"]";
+	},
+	formatMatch:function(row,i,max){return row.Chengpin+' '+row.Gongxu;},
+	formatResult:function(row){
+		return row.Chengpin;
+	}
+};
+function setValue(obj){
+	$.getJSON('InnerProductDetails.asp?showType=getInfo&detailType=Gongxu&jiagong='+encodeURI($('#jiagong').val()),function(data){
+	$(obj).unautocomplete();
+	$(obj).autocomplete(data,Autooptions);
+	$(obj).result(function(event,row, formatted){
+		if(row){
+			$('[name=GongxuID]',obj.parentNode.parentNode).val(row.SerialNum);
+			$('[name=Unit]',obj.parentNode.parentNode).val(row.Unit);
+			$('[name=Gongxu]',obj.parentNode.parentNode).val(row.Gongxu);
+			$('[name=Danjia]',obj.parentNode.parentNode).val(row.Zongji);
+			var jine=parseFloat($('input[name=Danjia]',obj.parentNode.parentNode).val())*parseFloat($('input[name=Shuliang]',obj.parentNode.parentNode).val());
+			$('input[name=Jine]',obj.parentNode.parentNode).val(jine);
+			if(row.Chengpin.indexOf('img')>-1){
+				$(obj.parentNode).html(row.Chengpin)
+			}
+			else
+				$('[name=Chengpin]',obj.parentNode.parentNode).val(row.Chengpin);
+		}
+		});
+	});
+}
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$("#AddForm").validate({
+		submitHandler:function(form){
+			$("input:submit").each(function() {this.disabled = true;});
+			$.post('InnerProductDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+				alert(data);
+				if(data.indexOf("成功")>-1){
+					$("#flex1").flexReload();
+				}
+				$("input:submit").each(function() {this.disabled = false;});
+			});
+			$("#addDiv").hide("slow");
+			$("#addDiv").css("z-index","500");
+		}
+	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'InnerProductDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '单号', name : 'a.SerialNum', width : 60, sortable : true, align: 'left'},
+	{display: '下单日期', name : 'XDdate', width : 60, sortable : true, align: 'left'},
+	{display: '委托方', name : 'Weituo', width : 40, sortable : true, align: 'left'},
+	{display: '加工方', name : 'jiagong', width : 40, sortable : false, align: 'left'},
+	{display: '订单号', name : 'Dingdan', width : 80, sortable : true, align: 'left'},
+	{display: '成品名称', name : 'Chengpin', width : 80, sortable : true, align: 'left'},
+	{display: '工序名称', name : 'Gongxu', width : 50, sortable : true, align: 'left'},
+	{display: '单位', name : 'Unit', width : 40, sortable : true, align: 'left'},
+	{display: '单价', name : 'Danjia', width : 40, sortable : true, align: 'left'},
+	{display: '需求数量', name : 'Shuliang', width : 40, sortable : true, align: 'left'},
+	{display: '损耗数量', name : 'Shuliang', width : 40, sortable : true, align: 'left'},
+	{display: '转入数量', name : 'Shuliang', width : 40, sortable : true, align: 'left'},
+	{display: '金额', name : 'Jine', width : 40, sortable : true, align: 'left'},
+	{display: '附件', name : 'Fujian', width : 60, sortable : true, align: 'left'},
+	{display: '审核', name : 'CheckFlag', width : 20, sortable : true, align: 'left'},
+	{display: '登记人', name : 'Biller', width : 60, sortable : true, align: 'left'},
+	{display: '登记日期', name : 'BillDate', width : 60, sortable : true, align: 'left'},
+	{display: '委托审核', name : 'Checker', width : 60, sortable : true, align: 'left'},
+	{display: '加工审核', name : 'Checker1', width : 60, sortable : true, align: 'left'},
+	{display: '委托确认', name : 'Checker2', width : 60, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '委托审核',  onpress : test},
+		{separator: true},
+		{name: '加工审核',  onpress : test},
+		{separator: true},
+		{name: '转入确认',  onpress : test},
+		{separator: true},
+		{name: '查询',  onpress : test},
+		{separator: true},
+		{name: '打印',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '订单号', name : 'Dingdan', isdefault: true},
+		{display: '委托方', name : 'Weituo'},
+		{display: '加工方', name : 'jiagong'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "a.SerialNum",
+	sortorder: "desc",
+	singleSelect: false,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '内部加工明细',
+	showTableToggleBtn: true,
+	showcheckbox: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#TbDetails tr:gt(1)').remove();
+		$('#SerialNum').val($(rowData).data("a.SerialNum"));
+		getInfo('SerialNum');
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('InnerProductDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":AllSNum},function(data){
+					alert(data);
+					if(data.indexOf("成功")>-1)  $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				var yestoday=showdate(0);
+				$('#XDDate').val(yestoday);
+				yestoday=showdate(7);
+				$('#JHDate').val(yestoday);
+				$('#detailType').val('AddNew');
+				$('#TbDetails tr:gt(1)').remove();
+				$("#addDiv").show("slow");
+			}			
+		else if (com=='委托审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				
+				var txt='';
+				$.prompt(txt,{
+					buttons: { 委托审核: '1',反审核:'0'},
+					submit:function(v,m,f){ 
+							$.post('InnerProductDetails.asp',{
+								showType:'DataProcess',
+								detailType:'Check',
+								SerialNum:AllSNum,
+								operattext:v
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+							return false; 
+					 }
+				 });
+			}			
+		else if (com=='加工审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				
+				var txt='';
+				$.prompt(txt,{
+					buttons: { 加工审核: '1',反审核:'0'},
+					submit:function(v,m,f){ 
+							$.post('InnerProductDetails.asp',{
+								showType:'DataProcess',
+								detailType:'Check1',
+								SerialNum:AllSNum,
+								operattext:v
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+							return false; 
+					 }
+				 });
+			}			
+		else if (com=='转入确认')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				
+				var txt='';
+				$.prompt(txt,{
+					buttons: { 转入确认: '1',反审核:'0'},
+					submit:function(v,m,f){ 
+							$.post('InnerProductDetails.asp',{
+								showType:'DataProcess',
+								detailType:'Check2',
+								SerialNum:AllSNum,
+								operattext:v
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+							return false; 
+					 }
+				 });
+			}			
+		else if (com=='查询')
+			{
+				var txt='';
+	txt+='下单日期：从<input name="SDate" type="text" class="textfield" id="SDate" style="width:30%;" value="" maxlength="100"  onfocus="$(this).datepick()">到<input name="EDate" type="text" class="textfield" id="EDate" style="width:30%" value="" maxlength="100"  onfocus="$(this).datepick()"><br/>';
+	txt+='委托方：<select id="wt" name="wt" class="textfield" style="width:30%"><option value="">全部</option><option value="三厂">三厂</option><option value="二厂">二厂</option><option value="一厂">一厂</option><option value="眼镜布绳">眼镜布绳</option><option value="花生盒">花生盒</option><option value="远华分厂">远华分厂</option><option value="工程部">工程部</option></select><br/>';
+	txt+='加工方：<select id="jg" name="jg" class="textfield" style="width:30%"><option value="">全部</option><option value="三厂">三厂</option><option value="二厂">二厂</option><option value="一厂">一厂</option><option value="眼镜布绳">眼镜布绳</option><option value="花生盒">花生盒</option><option value="喷漆科">喷漆科</option></select><br/>';
+	txt+='审核状态：<select id="sh" name="sh" class="textfield" style="width:30%"><option value="">全部</option><option value="0">未审核</option><option value="1">品保审核</option><option value="2">委托审核</option><option value="3">加工审核</option><option value="4">转入确认</option></select><br/>';
+				$.prompt(txt,{
+					buttons: { 查看: '0',导出:'1'},
+					submit:function(v,m,f){ 
+			if(v==0){
+				$("#flex1").flexOptions({newp: 1, params:[
+					{name:"sd",value:f.SDate},
+					{name:"ed",value:f.EDate},
+					{name:"wt",value:f.wt},
+					{name:"jg",value:f.jg},
+					{name:"sh",value:f.sh}
+					]
+				});
+				$("#flex1").flexReload();
+				$.prompt.close();
+			}else{
+				window.open("InnerProductDetails.asp?print_tag=1&showType=Export&sd="+f.SDate+"&ed="+f.EDate+"&wt="+encodeURI(f.wt)+"&jg="+encodeURI(f.jg),"Print","","false");
+				$.prompt.close();
+			}
+							return false; 
+					 }
+				 });
+			}			
+		else if (com=='打印'){
+			if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+			var SNum=$('.trSelected', grid).attr("id").replace("row","");
+			window.open("InnerProductDetails.asp?showType=ExportOne&SerialNum="+SNum,"Print","","false");
+		}
+	}
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("InnerProductDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+						 if(fieldone.type=='checkbox'){
+							 if(datajson.fieldValue[0][fieldone.id]=="True")fieldone.checked=datajson.fieldValue[0][fieldone.id];
+						 }else{
+							 if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+							 if(datajson.fieldValue[0][fieldone.id])
+								 $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+						 }
+					 }
+			   });
+				//子表信息
+				$('#TbDetails tr:gt(1)').remove();
+				for(var i=0;i<datajson.fieldValue[0]['Entrys'].length;i++){
+					$('#TbDetails').append($('#CloneNodeTr').clone().show());
+					$(':input',$('#TbDetails tr:last')).each(function(n,fieldone){
+						if(fieldone.name=='Fujian'){
+							$(fieldone).attr("id","Fujian"+ids);
+							$('#Fujian'+ids).xheditor({tools:'Link,Preview',skin:'vista',upLinkUrl:'../Include/UpLoadAjax.asp',upLinkExt:'doc,xls,pdf,jpg,bmp',height:'20',width:'60'});
+							ids++;
+						}
+						if(datajson.fieldValue[0]['Entrys'][i][fieldone.name]){
+							if(datajson.fieldValue[0]['Entrys'][i][fieldone.name].indexOf('img')>-1){
+								$(fieldone.parentNode).html(datajson.fieldValue[0]['Entrys'][i][fieldone.name]);
+							}else 
+								fieldone.value=datajson.fieldValue[0]['Entrys'][i][fieldone.name];
+						}
+					});
+				}
+		   }
+		 }
+	   });
+}
+function mycheckNum1(obj){
+	if(checkNum(obj)){
+		$('input[name=Zhuanru]',obj.parentNode.parentNode).val(obj.value);
+		var jine=Math.round(parseFloat($('input[name=Danjia]',obj.parentNode.parentNode).val())*parseFloat(obj.value)*100)/100;
+		$('input[name=Jine]',obj.parentNode.parentNode).val(jine);
+	}
+}
+function mycheckNum2(obj){
+	if(checkNum(obj)){
+		var Sunhao=parseFloat(obj.value)-parseFloat($('input[name=Shuliang]',obj.parentNode.parentNode).val());
+		var jine=Math.round(parseFloat($('input[name=Danjia]',obj.parentNode.parentNode).val())*parseFloat(obj.value)*100)/100;
+		$('input[name=Sunhao]',obj.parentNode.parentNode).val(Sunhao);
+		$('input[name=Jine]',obj.parentNode.parentNode).val(jine);
+	}
+}
+function changeYL(obj){
+	if(obj.checked){
+		$('#YuanCaiLiao').show();
+	}else
+		$('#YuanCaiLiao').hide();
+}
+var ids=0;
+function AddRow(){
+	$('#TbDetails').append($('#CloneNodeTr').clone().show());
+	$(':input[name=Fujian]',$('#TbDetails tr:last')).attr("id","Fujian"+ids);
+	$('#Fujian'+ids).xheditor({tools:'Link,Preview',skin:'vista',upLinkUrl:'../Include/UpLoadAjax.asp',upLinkExt:'doc,xls,pdf,jpg,bmp',height:'20'});
+	ids++;
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm" style="margin:0; padding:0 ">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="$('#addDiv').hide('slow').css('z-index','500');" >&nbsp;<strong>内部加工明细</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id=editNews>
+      <tr>
+        <td height="20" align="left" width="10%">单据号：</td>
+        <td WIDTH='15%'>
+		<input name="SerialNum" type="text" class="textfield" id="SerialNum" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">委托部门：</td>
+        <td  WIDTH='15%'><select name="Weituo" id="Weituo" class="textfield">
+      <option value="一厂">一厂</option>
+      <option value="二厂">二厂</option>
+      <option value="三厂">三厂</option>
+      <option value="眼镜布绳">眼镜布绳</option>
+      <option value="花生盒">花生盒</option>
+      <option value="工程部">工程部</option>
+      <option value="远华分厂">远华分厂</option>
+      </select></td>
+        <td height="20" align="left" width="10%">加工单位：</td>
+        <td  WIDTH='15%'><select name="jiagong"  id="jiagong" class="textfield" onchange="$('#TbDetails tr:gt(1)').remove();">
+      <option value="三厂">三厂</option>
+      <option value="二厂">二厂</option>
+      <option value="一厂">一厂</option>
+      <option value="眼镜布绳">眼镜布绳</option>
+      <option value="花生盒">花生盒</option>
+      <option value="喷漆科">喷漆科</option>
+      </select></td>
+        <td height="20" width="10%" align="left">下单日期：</td>
+        <td width="15%"><input name="XDDate" type="text" class="dateISO required textfield" id="XDDate"  value="" maxlength="100"  onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})"></td>
+      </tr>
+      <tr>
+     	  <td>交货日期：</td>
+        <td><input name="JHDate" type="text" class="dateISO required textfield" id="JHDate"  value="" maxlength="100"  onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})"></td>
+        <td><input type="checkbox" name="Shengchanlx" id="Shengchanlx" value="1" /><label for="Shengchanlx">子制令</label>
+        </td>
+      <td>备注：</td>
+      <td colspan="4"><input type="text" name="Remark" id="Remark" class="textfield" /></td>
+      </tr>
+      <tr>
+      <td colspan="8">
+      <fieldset><legend>提供物品项目及明细：</legend>
+      <input type="checkbox" name="YP" id="YP" value="1" /><label for="YP">提供样品</label>
+      <input type="checkbox" name="FG" id="FG" value="1" /><label for="FG">提供附稿</label>
+      <input type="checkbox" name="TZ" id="TZ" value="1" /><label for="TZ">提供图纸</label>
+      <input type="checkbox" name="CP" id="CP" value="1" /><label for="CP">提供试做的产品</label>
+      <input type="checkbox" name="YCL" id="YCL" value="1" onpropertychange="changeYL(this)"/><label for="YCL">提供原材料</label>
+      <br />
+		  <textarea name="YuanCaiLiao" id="YuanCaiLiao" class="textfield" style="width:95%; height:50px; display:none;"></textarea></fieldset>
+      </td>
+      </tr>
+      <tr>
+        <td height="20" colspan="8">
+		<table width="100%" border="0" id="editDetails" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+		  <tbody id="TbDetails">
+		  <tr height="24">
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>订单号</strong></font></td>
+			<td width="8%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>成品名称</strong></font></td>
+			<td width="10%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>工序名称</strong></font></td>
+			<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>单位</strong></font></td>
+			<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>单价</strong></font></td>
+			<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>需求数量</strong></font></td>
+			<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>损耗数量</strong></font></td>
+			<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>转入数量</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>金额</strong></font></td>
+			<td width="8%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>备注</strong></font></td>
+			<td width="8%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>附件</strong></font></td>
+			<td width="3%" bgcolor="#8DB5E9"><strong><font color="#FFFFFF">操作</font></strong></td>
+		  </tr>
+		  <tr bgColor="#EBF2F9" id="CloneNodeTr" style="display:none;" >
+			<td><input type="hidden" name="DSerialNum" /><input type="hidden" name="GongxuID" /><input type="text" name="Dingdan" class="textfield" /></td>
+			<td><input type="text" name="Chengpin" class="textfield" onfocus="setValue(this)" /></td>
+			<td><input type="text" name="Gongxu" class="textfield" readonly="readonly" /></td>
+			<td><input type="text" name="Unit" class="textfield" readonly="readonly"/></td>
+			<td><input type="text" name="Danjia" class="textfield" readonly="readonly"/></td>
+			<td><input type="text" name="Shuliang" class="number textfield" value="0" onblur="return mycheckNum1(this)"/></td>
+			<td><input type="text" name="Sunhao" class="number textfield" value="0" readonly="readonly"/></td>
+			<td><input type="text" name="Zhuanru" class="number textfield" value="0" onblur="return mycheckNum2(this)"/></td>
+			<td><input type="text" name="Jine" class="number textfield" value="0" readonly="readonly"/></td>
+			<td><input type="text" name="DRemark" class="textfield"/></td>
+			<td><textarea name="Fujian" class="textfield"></textarea></td>
+			<td align="center"><input type="button" onClick="$(this).parent().parent().hide();$(this).next().val(1);" style="background:no-repeat center url(../Images/delete.gif);width:40px;" /><input type="hidden" name="DeleteFlag" id="DeleteFlag" value="0"></td>
+		  </tr>
+		  </tbody>
+		</table>
+    </td>
+    </tr>
+      <tr>
+      <td colspan="8">
+      <fieldset><legend>工艺要求：</legend>
+		  <textarea name="Gongyi" id="Gongyi" class="textfield" style="width:95%; height:50px;"></textarea></fieldset>
+      </td>
+      </tr>
+      <tr>
+      <td colspan="8">
+      <fieldset><legend>质量要求：</legend>
+		  <textarea name="Pingzhi" id="Pingzhi" class="textfield" style="width:95%; height:50px;"></textarea></fieldset>
+      </td>
+      </tr>
+      <tr>
+		<td colspan="8"><fieldset><legend>审核：</legend>
+    委托制单/日期：<input type="text" name="Biller" id="Biller" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="Billdate" id="Billdate" class="txt" readonly="readonly"/>&nbsp;
+    品保审核/日期：<input type="text" name="QcChecker" id="QcChecker" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="QcCheckDate" id="QcCheckDate" class="txt" readonly="readonly"/>&nbsp;
+    <br />
+    委托审核/日期：<input type="text" name="Checker" id="Checker" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="CheckDate" id="CheckDate" class="txt" readonly="readonly"/>&nbsp;
+    加工审核/日期：<input type="text" name="Checker1" id="Checker1" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="CheckDate1" id="CheckDate1" class="txt" readonly="readonly"/>&nbsp;
+    <br />
+    生产确认/日期：<input type="text" name="Confirm" id="Confirm" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="ConfirmDate" id="ConfirmDate" class="txt" readonly="readonly"/>&nbsp;
+    转入确认/日期：<input type="text" name="Checker2" id="Checker2" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="CheckDate2" id="CheckDate2" class="txt" readonly="readonly"/>&nbsp;
+		  </fieldset>
+		</td>
+      </tr>
+    </table>
+		</td>
+  </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+    <input name="addrow" type="button" class="button"  value="增加一行" style="WIDTH: 80;" onClick="AddRow()">&nbsp;
+			<input type="submit" class="submit button"  value="保存" style="WIDTH: 80;">&nbsp;
+			<input type="submit" class="submit button"  value="品保审核" style="WIDTH: 80;" onclick="$('#detailType').val('PBQueren');">&nbsp;
+			<input type="submit" class="submit button"  value="生产确认" style="WIDTH: 80;" onclick="$('#detailType').val('Product');">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="$('#addDiv').hide('slow').css('z-index','500');">&nbsp;
+	  </td>
+	</tr>
+</table>
+</form>
+</div>
+<div id="listDiv" style="width:100%;top:0;left:20;display:none;background-color:#ffffff;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-x:hidden; overflow-y:scroll; z-index:550">
+</div>
+</BODY>
+</HTML>

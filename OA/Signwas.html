@@ -1,0 +1,654 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.tools.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery.tools.min.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<link rel="stylesheet" href="../Images/jquery.autocomplete.css">
+<script language="javascript" src="../Script/jquery.autocomplete.pack.js"></script>
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+var cddata;//惩点
+var jddata;//奖点
+var Autooptions={
+	minChars:0,
+	max:500,
+	width:280,
+	height:200,
+	mustMatch: false,
+	matchContains:true,
+	formatItem:function(row,i,max){
+		return row.nr.substr(0,20)+'  ['+row.ckjc+']';
+	},
+	formatMatch:function(row,i,max){return row.nr;},
+	formatResult:function(row){return row.nr;}
+};
+function initAuto1(data){
+	jddata=data;
+}
+function initAuto2(data2){
+	cddata=data2;
+}
+function setAotu(obj){
+	$(obj).unautocomplete();
+	if($(':input[name=d2_奖惩项目]',obj.parentNode.parentNode).val()=='惩点') $(obj).autocomplete(cddata,Autooptions);
+	if($(':input[name=d2_奖惩项目]',obj.parentNode.parentNode).val()=='奖点') $(obj).autocomplete(jddata,Autooptions);
+}
+/*
+var productList;
+var Autooptions3={
+	minChars:1,
+	max:20,
+	width:250,
+	mustMatch: false,
+	matchContains:true,
+	formatItem:function(row,i,max){
+		return row.FNumber+' ['+row.FName+']';
+	},
+	formatMatch:function(row,i,max){return row.FNumber+' '+row.FName;},
+	formatResult:function(row){return row.FNumber;}
+};
+function initAuto3(data){
+	productList=data;
+}
+function aotuunit(obj){
+	$(obj).autocomplete(productList,Autooptions3);
+}*/
+$(function(){
+	$.getJSON('SignwasDetails.asp?showType=getInfo&detailType=getJd',null,initAuto1);
+	$.getJSON('SignwasDetails.asp?showType=getInfo&detailType=getCd',null,initAuto2);
+//	$.getJSON('SignwasDetails.asp?showType=getInfo&detailType=getAllPerson',null,initAuto3);
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$('#签呈日期').datepick({dateFormat: 'yyyy-mm-dd'});
+	$(".css-tabs:first").tabs(".css-panes:first > div");
+	$("#AddForm").validate({
+		submitHandler:function(form){
+			if($(':input[name=d1_员工代号][value!=""]',$('#t1')).length<1){
+				alert('签核人不能为空，请检查！');
+				return false;
+			}
+			if($(':input[name=d2_员工代号][value!=""]',$('#t2')).length<1){
+				alert('签呈人明细不能为空，请检查！');
+				return false;
+			}
+			var zeroflag=false;
+			$("tr:gt(1)",$('#t2')).each(function(i,fieldone){
+					if($(':input[name=d2_奖点数]',$(fieldone)).val()=='0'&&$(':input[name=d2_惩点数]',$(fieldone)).val()=='0'&&$(':input[name=d2_员工代号]',$(fieldone)).val()!=''){
+						zeroflag=true;
+					}
+				});
+			if(zeroflag){
+				alert('奖点惩点不能同时为0，请检查！');
+				return false;
+			}
+			$("input:submit").each(function() {this.disabled = true;});
+			$.post('SignwasDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+				 alert(data);
+				if(data.indexOf("成功")>-1) $("#flex1").flexReload();
+				$("input:submit").each(function() {this.disabled = false;});
+			});
+			$("#addDiv").hide("slow");
+			$("#addDiv").css("z-index","500");
+		}
+	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'SignwasDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '单号', name : 'a.编号', width : 60, sortable : true, align: 'left'},
+	{display: '申请人编号', name : 'a.员工代号', width : 60, sortable : true, align: 'left'},
+	{display: '申请人', name : 'a.员工姓名', width : 60, sortable : true, align: 'left'},
+	{display: '签呈部门', name : '部门名称', width : 60, sortable : true, align: 'left'},
+	{display: '签呈日期', name:'签呈日期',width : 60, sortable : true, align: 'left'},
+	{display: '主题', name:'a.主题',width : 120, sortable : true, align: 'left'},
+	{display: '影响程度', name:'a.影响程度',width : 60, sortable : true, align: 'left'},
+	{display: '类别', name:'a.类别',width : 60, sortable : true, align: 'left'},
+	{display: '项目类别', name:'a.ProjectType',width : 60, sortable : true, align: 'left'},
+	{display: '状态', name:'a.状态',width : 60, sortable : true, align: 'left'},
+	{display: '确认', name:'a.确认',width : 40, sortable : true, align: 'left'},
+	{display: '审核', name:'a.审核',width : 40, sortable : true, align: 'left'},
+	{display: '登记日期', name:'a.BillDate',width : 40, sortable : true, align: 'left'},
+	{display: '登记人', name:'a.Biller',width : 40, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '确认',  onpress : test},
+		{separator: true},
+		{name: '导出',  onpress : test},
+		{separator: true},
+		{name: '打印',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '单号', name : 'a.编号', isdefault: true},
+		{display: '申请人编号', name : 'a.员工代号'},
+		{display: '被签呈人编号', name : 'c.员工代号'},
+		{display: '是否确认', name : 'a.确认'},
+		{display: '审核', name : 'a.审核'},
+		{display: '主题', name : 'a.主题'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "a.编号",
+	sortorder: "desc",
+	singleSelect: true,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '签呈管理',
+	showTableToggleBtn: true,
+	showcheckbox: false,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#编号').val($(rowData).data("a.编号"));
+		getInfo('编号');
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要删除单号为：' + SNum + ' 的记录?')){
+				  $.post('SignwasDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":SNum},function(data){
+					alert(data);
+					if(data.indexOf("成功")>-1)  $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#t1 tr:gt(1)').remove();
+				$('#t1 tbody').append($('#t1 tr:eq(1)').clone().show());
+				$('#t2 tr:gt(1)').remove();
+				$('#t2 tbody').append($('#t2 tr:eq(1)').clone().show());
+				var yestoday=showdate(0);
+				$('#签呈日期').val(yestoday);
+				$('#detailType').val('AddNew');
+				$("#addDiv").show("slow");
+			}			
+		else if (com=='确认')
+			{
+				$.prompt('',{
+					buttons: { 确认: '1',取消确认:'0' },
+					submit:function(v,m,f){ 
+						if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+						var SNum=$('.trSelected', grid).attr("id").replace("row","");
+						$.post('SignwasDetails.asp?showType=DataProcess&detailType=Confirm',{"SerialNum":SNum,firmtag:v},function(data){
+						alert(data);
+						if(data.indexOf("成功")>-1)  $("#flex1").flexReload();
+						});
+						$.prompt.close();
+						return false; 
+					 }
+				 });
+			}
+		else if (com=='导出')
+			{
+				var txt='';
+				txt+='确认状态：<select id="ConfirmStat" name="ConfirmStat" class="textfield" style="width:30%"><option value="">全部</option><option value="1">已确认</option><option value="0">未确认</option></select><br/>';
+				txt+='审核状态：<select id="CheckStat" name="CheckStat" class="textfield" style="width:30%"><option value="">全部</option><option value="2">已退回</option><option value="1">已审核</option><option value="0">未审核</option></select><br/>';
+				txt+='审核日期：从<input name="SDate" type="text" class="textfield" id="SDate" style="width:30%;" value="" maxlength="100"  onfocus="$(this).datepick()">到<input name="EDate" type="text" class="textfield" id="EDate" style="width:30%" value="" maxlength="100"  onfocus="$(this).datepick()"><br/>';
+				txt+='部门：：<select id="Dpt" name="Dpt" class="textfield" style="width:30%"><option value="">全部</option><option value="管理部">管理部</option><option value="工程部">工程部</option><option value="采购部">采购部</option><option value="生技部">生技部</option><option value="仓储科">仓储科</option><option value="二厂">二厂</option><option value="三厂">三厂</option><option value="财务部">财务部</option><option value="一厂">一厂</option><option value="品管部">品管部</option><option value="总经办">总经办</option><option value="远华">远华</option><option value="生管部">生管部</option><option value="眼镜布绳">眼镜布绳</option>><option value="花生盒">花生盒</option></select><br/>';
+				txt+='工号：<input type="test" id="UId" name="UId" class="textfield" style="width:30%"><br/>';
+				txt+='薪资别：<select id="Xzb" name="Xzb" class="textfield" style="width:30%"><option value="">全部</option><option value="1.行政月薪">1.行政月薪</option><option value="2.分厂月薪">2.分厂月薪</option><option value="3.计件">3.计件</option></select><br/>';
+				txt+='签呈类别：<select id="Lb" name="Lb" class="textfield" style="width:30%"><option value="">1.奖惩</option><option value="3.自离">3.自离</option><option value="4.厂服">4.厂服</option></select><br/>';
+				$.prompt(txt,{
+					buttons: { 页面查看: 'webshow',导出: 'Print' },
+					submit:function(v,m,f){ 
+						if(v=='Print'){
+							window.open("SignwasDetails.asp?showType=Export&print_tag=1&SDate="+f.SDate+"&EDate="+f.EDate+"&CheckStat="+f.CheckStat+"&Dpt="+encodeURI(f.Dpt)+"&UId="+f.UId+"&Xzb="+encodeURI(f.Xzb)+"&Lb="+encodeURI(f.Lb)+"&ConfirmStat="+f.ConfirmStat,"Print","","false");
+							$.prompt.close();
+						}
+						else if(v=='webshow'){
+							$('#listDiv').load("SignwasDetails.asp #listtable",{
+								showType:'Export',
+								SDate:f.SDate,
+								EDate:f.EDate,
+								Dpt:f.Dpt,
+								UId:f.UId,
+								Xzb:f.Xzb,
+								Lb:f.Lb,
+								ConfirmStat:f.ConfirmStat,
+								CheckStat:f.CheckStat
+							 },function(response, status, xhr){
+								if (status =="success") {
+									$.prompt.close();
+									$("#listDiv").show("slow");
+								}	
+							});
+						}
+						return false; 
+					 }
+				 });
+			}
+		else if (com=='打印'){
+			if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+			var SNum=$('.trSelected', grid).attr("id").replace("row","");
+			window.open("SignwasDetails.asp?showType=Print&SerialNum="+SNum,"Print","","false");
+		}
+	}
+
+
+function closead1(){
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("SignwasDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="编号"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+				   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+				   if(datajson.fieldValue[fieldone.id]){
+					 $('#'+fieldone.id).val(datajson.fieldValue[fieldone.id]);
+				   }
+				 }
+			   });
+				//子表信息
+				$('#t1 tr:gt(1)').remove();
+				for(var i=0;i<datajson.t1.length;i++){
+					$('#t1 tbody').append($('#t1 tr:eq(1)').clone().show());
+					$(':input',$('#t1 tbody tr:last')).each(function(n,fieldone){
+						if(datajson.t1[i][fieldone.name]!==undefined){
+							if(fieldone.type=='checkbox')
+								if(fieldone.name=='d1_可修改'){
+									if(datajson.t1[i][fieldone.name]){
+										$(':input[name=d1_可修改][value=1]',$('#t1 tbody tr:last')).attr("checked",true);
+										$(':input[name=d1_可修改][value=0]',$('#t1 tbody tr:last')).attr("checked",false);
+									}
+									else{
+										$(':input[name=d1_可修改][value=1]',$('#t1 tbody tr:last')).attr("checked",false);
+										$(':input[name=d1_可修改][value=0]',$('#t1 tbody tr:last')).attr("checked",true);
+									}
+								}else if(fieldone.name=='d1_审核'){
+									if(datajson.t1[i][fieldone.name]){
+										$(':input[name=d1_审核][value=1]',$('#t1 tbody tr:last')).attr("checked",true);
+										$(':input[name=d1_审核][value=0]',$('#t1 tbody tr:last')).attr("checked",false);
+									}
+									else{
+										$(':input[name=d1_审核][value=1]',$('#t1 tbody tr:last')).attr("checked",false);
+										$(':input[name=d1_审核][value=0]',$('#t1 tbody tr:last')).attr("checked",true);
+									}
+								}else
+								$(fieldone).attr("checked", datajson.t1[i][fieldone.name]);
+						 else{
+							fieldone.value=datajson.t1[i][fieldone.name];
+						 }
+						}
+					});
+				}
+				$('#t1 tbody').append($('#t1 tr:eq(1)').clone().show());
+				$('#t2 tr:gt(1)').remove();
+				for(var i=0;i<datajson.t2.length;i++){
+					$('#t2 tbody').append($('#t2 tr:eq(1)').clone().show());
+					$(':input',$('#t2 tbody tr:last')).each(function(n,fieldone){
+						if(datajson.t2[i][fieldone.name]){
+							if(fieldone.type=='checkbox'){
+								$(fieldone).attr("checked", datajson.t2[i][fieldone.name]);
+							}
+						 else{
+							fieldone.value=datajson.t2[i][fieldone.name];
+						 }
+						 }
+					});
+				}
+				$('#t2 tbody').append($('#t2 tr:eq(1)').clone().show());
+		   }
+			 else if (obj=="员工代号"){
+				 $("#员工代号").val(data.split('###')[0]);
+				 $("#员工姓名").val(data.split('###')[1]);
+				 $("#部门代号").val(data.split('###')[2]);
+				 $("#部门名称").val(data.split('###')[3]);
+			 }
+		 }
+	 });
+}
+function getEmp(obj){
+  if($(obj).val()=='')return false;
+	$.get("SignwasDetails.asp", { showType: "getInfo",detailType: '员工代号', InfoID: $(obj).val()},
+		function(data){
+			if(data.indexOf("###")==-1){
+				alert(data);
+				$(obj).val('');
+			}
+			else{
+				$('input[name*=员工代号]',obj.parentNode.parentNode).val(data.split('###')[0]);
+				$('input[name*=姓名]',obj.parentNode.parentNode).val(data.split('###')[1]);
+				$('input[name*=职等]',obj.parentNode.parentNode).val(data.split('###')[5]);
+				if($('input[name*=工作岗位]',obj.parentNode.parentNode))$('input[name*=工作岗位]',obj.parentNode.parentNode).val(data.split('###')[4]);
+				var oldxh=parseFloat($(':input[name*=序号]',obj.parentNode.parentNode).val());
+				if($(':input[name*=员工代号][value=""]',$(obj).parent().parent().parent()).length==1){
+					$(obj).parent().parent().parent().append($('tr:eq(1)',$(obj).parent().parent().parent()).clone().show());
+					if($(obj).parent().parent().parent().parent().attr("id")=="t1")$(':input[name*=序号]',$('#t1 tbody tr:last')).val(oldxh+1);
+				}
+				if($(':input[name*=员工代号][value='+data.split('###')[0]+']',$(obj).parent().parent().parent()).length>1){
+					alert('此单据中已经存在该员工,不允许重复录入！');
+					$(obj).parent().parent().remove();
+				}
+			}
+		});
+}
+function Award(obj){
+	if($(':input[name=d2_奖惩项目]',obj.parentNode.parentNode).val()=='奖点'){
+		$(':input[name=d2_惩点数]',obj.parentNode.parentNode).val(0).attr('readonly',true);
+		$(':input[name=d2_奖点数]',obj.parentNode.parentNode).attr('readonly',false);
+	}
+	if($(':input[name=d2_奖惩项目]',obj.parentNode.parentNode).val()=='惩点'){
+		$(':input[name=d2_惩点数]',obj.parentNode.parentNode).attr('readonly',false);
+		$(':input[name=d2_奖点数]',obj.parentNode.parentNode).val(0).attr('readonly',true);
+	}
+}
+function Delete(obj,t){
+	var detailsNo=$(':input[name*=no]',obj.parentNode.parentNode).val();
+	var No=$('#编号').val();
+	if(detailsNo=='' || No=='')$(obj).parent().parent().remove();
+	else{
+		$.post('SignwasDetails.asp?showType=DataProcess&detailType=DeleteDetails',{"No":No,"SerialNum":detailsNo,"Type":t},function(data){
+		if(data.indexOf("成功")>-1)$(obj).parent().parent().remove();
+		else alert(data);
+		});
+	}
+}
+function CheckOne(obj){
+	var detailsNo=$(':input[name=d1_no]',obj.parentNode.parentNode).val();
+	var No=$('#编号').val();
+	if(detailsNo=='' || No=='')alert('未保存无需审核！');
+	else{
+		var txt='审核意见： <textarea name="CheckText" id="CheckText" style="width:90%; height:100px; " class="textfield"></textarea>';
+		$.prompt(txt,{
+			buttons: { 同意: 'Agree',不同意:'Disagree',取消确认:'Uncheck' },
+			submit:function(v,m,f){ 
+				$.post('SignwasDetails.asp?showType=DataProcess&detailType=CheckDetails',{"No":No,"SerialNum":detailsNo,"Type":v,"CheckText":f.CheckText},function(data){
+					alert(data);
+					if(data.indexOf("成功")>-1){
+						if(v=='Agree'){
+							$(':input[name=d1_同意]',obj.parentNode.parentNode).attr('checked',true);
+							$(':input[name=d1_意见]',obj.parentNode.parentNode).val(f.CheckText);
+						}
+						else if(v=='Disagree'){
+							$(':input[name=d1_不同意]',obj.parentNode.parentNode).attr('checked',true);
+							$(':input[name=d1_意见]',obj.parentNode.parentNode).val(f.CheckText);
+						}
+						else if(v=='Uncheck'){
+							$(':input[name=d1_同意]',obj.parentNode.parentNode).attr('checked',false);
+							$(':input[name=d1_不同意]',obj.parentNode.parentNode).attr('checked',false);
+						}
+						$("#flex1").flexReload();
+					}
+				});
+				$.prompt.close();
+				return false; 
+			 }
+		 });
+	}
+}
+function EmailOne(obj){
+	var detailsNo=$(':input[name=d1_no]',obj.parentNode.parentNode).val();
+	var No=$('#编号').val();
+	if(detailsNo=='' || No=='')alert('未保存不允许发送邮件！');
+	$.post('SignwasDetails.asp?showType=DataProcess&detailType=EmailDetails',{"No":No,"SerialNum":detailsNo},function(data){
+		alert(data);
+	});
+}
+function changeLB(obj){
+	if($(obj).val()=='4.厂服'){
+		$('td:eq(3)',$('#t2')).html('<font color="red"><strong>金额</strong></font>');
+	}else
+		$('td:eq(3)',$('#t2')).html('<font color="#FFFFFF"><strong>奖点</strong></font>');
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm" style="margin:0; padding:0 ">
+ 
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>签呈管理</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td WIDTH="10%" height="20" align="left">编号：</td>
+        <td width="15%"><input name="编号" type="text" class="textfield" id="编号" value="" maxlength="100" readonly="readonly">
+        </td>
+        <td WIDTH="10%" height="20" align="left">申请人工号：</td>
+        <td width="15%"><input name="员工代号" type="text" class="required textfield" id="员工代号" value="" onBlur="getInfo('员工代号')">
+        </td>
+        <td WIDTH="10%" height="20" align="left">申请人姓名：</td>
+        <td width="15%"><input name="员工姓名" type="text" class="required textfield" id="员工姓名" value="" maxlength="100" readonly="readonly">
+        </td>
+        <td WIDTH="10%" height="20" align="left">申请人部门：</td>
+        <td width="15%"><input type="hidden" name="部门代号" id="部门代号" />
+        <input name="部门名称" type="text" class="textfield" id="部门名称" value="" maxlength="100" readonly="readonly">
+        </td>
+      </tr>
+      <tr>
+      <td>签呈日期：</td>
+      <td><input name="签呈日期" type="text"  class="dateISO required textfield" id="签呈日期"></td>
+      <td>影响程度：</td>
+      <td><select class="textfield" id="影响程度" name="影响程度">
+      <option value="2.一般性">2.一般性</option>
+      <option value="1.无影响">1.无影响</option>
+      <option value="3.重要性">3.重要性</option>
+      <option value="4.特重要性">4.特重要性</option>
+      </select>
+      </td>
+      <td>性质：</td>
+      <td><select class="textfield" id="性质" name="性质">
+      <option value="1.正常">1.正常</option>
+      <option value="2.异常">2.异常</option>
+      </select>
+      </td>
+      <td>奖惩类别：</td>
+      <td><select class="textfield" id="类别" name="类别" onpropertychange="changeLB(this)">
+      <option value="1.奖惩">1.奖惩</option>
+      <option value="2.事务">2.事务</option>
+      <option value="3.自离">3.自离</option>
+      <option value="4.厂服">4.厂服</option>
+      <option value="5.加扣">5.加扣</option>
+      <option value="6.记小过">6.记小过</option>
+      <option value="7.记大过">7.记大过</option>
+      <option value="8.开除">8.开除</option>
+      </select>
+      </td>
+      </tr>
+      <tr>
+		<td colspan="8"><fieldset><legend>主题：</legend>
+    <input type="text" name="主题" id="主题" class="required textfield" />
+		</fieldset>
+		</td>
+		</tr> 
+    <tr>
+      <td>签呈类别：</td>
+      <td><select class="textfield" id="ProjectType" name="ProjectType">
+      <option value="6S管理规定">6S管理规定</option>
+      <option value="餐厅规定">餐厅规定</option>
+      <option value="产量达标">产量达标</option>
+      <option value="工作认真">工作认真</option>
+      <option value="公司财产规定">公司财产规定</option>
+      <option value="交办事项">交办事项</option>
+      <option value="节能降耗">节能降耗</option>
+      <option value="旷工">旷工</option>
+      <option value="品德行为规定">品德行为规定</option>
+      <option value="品质异常">品质异常</option>
+      <option value="上课开会规定">上课开会规定</option>
+      <option value="上下班规定">上下班规定</option>
+      <option value="申购厂服">申购厂服</option>
+      <option value="生产规定">生产规定</option>
+      <option value="守卫规定">守卫规定</option>
+      <option value="宿舍规定">宿舍规定</option>
+      <option value="通讯规定">通讯规定</option>
+      <option value="自离">自离</option>
+      <option value="教育培训">教育培训</option>
+      <option value="废品房规定">废品房规定</option>
+      <option value="设备保养">设备保养</option>
+      </select>
+      </td>
+      <td>损失金额：</td>
+      <td><input type="text" name="LossMoney" id="LossMoney" class="required number textfield" value="0"/></td>
+      <td colspan="4"></td>
+    </tr>
+      <tr>
+		<td colspan="8"><fieldset><legend>签呈内容：</legend>
+     <input type="text" name="签呈内容" id="签呈内容" class="required textfield" value="呈:X科长 X厂长 Y经理 Y副总"/>
+		  <textarea name="签呈内容1" id="签呈内容1" style="width:90%; height:100px; " class="required textfield">   兹有员工XXX,工号123456,------.</textarea></fieldset>
+		</td>
+      </tr>
+      <tr><td colspan="8">
+      <!-- tabs -->
+<ul class="css-tabs">
+	<li><a href="#">会签人员</a></li>
+	<li><a href="#">签呈明细</a></li>
+</ul>
+<!-- panes -->
+<div class="css-panes">
+	<div>
+<table style="border:1px #666 solid;" id="t1">
+<tbody>
+<tr>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>员工代号</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>姓名</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>职等</strong></font></td>
+<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>顺序</strong></font></td>
+<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>可修改</strong></font></td>
+<td width="16%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>意见</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>审核</strong></font></td>
+<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>同意</strong></font></td>
+<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>不同意</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>签核时间</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>操作</strong></font></td>
+</tr>
+<tr bgColor="#EBF2F9" style="display:none">
+<td><input type="hidden" name="d1_no"/>
+<input type="text" name="d1_员工代号" class="textfield" onblur="getEmp(this)" /></td>
+<td><input type="text" name="d1_员工姓名" class="textfield" readonly="readonly"/></td>
+<td><input type="text" name="d1_职等" class="textfield" readonly="readonly"/></td>
+<td><input type="text" name="d1_序号" class="textfield" value="1"/></td>
+<td><input type="checkbox" value="1" name="d1_可修改" checked="checked" onclick="return $(this).next().attr('checked',!this.checked)"/>
+<input type="checkbox" value="0" name="d1_可修改" style="display:none">
+</td>
+<td><input type="text" name="d1_意见" class="textfield" readonly="readonly"/></td>
+<td align="left"><input type="checkbox" value="1" name="d1_审核" onclick="return $(this).next().attr('checked',!this.checked)" style="margin:0;padding:0;"/>
+<input type="checkbox" value="0" name="d1_审核" checked="checked" style="margin:0;padding:0;display:none">
+<input type="button" onClick="EmailOne(this)" style="background:no-repeat center url(../Images/Edit.gif);width:18px;height:18px;margin:0;padding:0;" title="点击进行邮件通知！"/>
+</td>
+<td><input type="checkbox" value="1" name="d1_同意" onclick="return this.checked = !this.checked"/></td>
+<td><input type="checkbox" value="1" name="d1_不同意" onclick="return this.checked = !this.checked"/></td>
+<td><input type="text" name="d1_时间" class="textfield" readonly="readonly"/></td>
+<td align="left"><input type="button" onClick="Delete(this,'t1')" style="background:no-repeat center url(../Images/delete.gif);width:20px; height:20px;" class="button"/>
+<input type="button" onClick="CheckOne(this)" style="background:no-repeat center url(../Images/checked.gif); width:20px; height:20px;" title="点击进行审核"/>
+</td>
+</tr>
+</tbody>
+</table>
+	</div>
+	<div>
+<table style="border:1px #666 solid;" id="t2">
+<tbody>
+<tr>
+<td width="5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>员工代号</strong></font></td>
+<td width="5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>姓名</strong></font></td>
+<td width="5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>奖惩项目</strong></font></td>
+<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>奖点</strong></font></td>
+<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>惩点</strong></font></td>
+<td width="20%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>事由</strong></font></td>
+<td width="10%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>管理规定</strong></font></td>
+<td width="5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>工作岗位</strong></font></td>
+<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>职等</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>操作</strong></font></td>
+</tr>
+<tr bgColor="#EBF2F9" style="display:none">
+<td><input type="hidden" name="d2_no"/>
+<input type="text" name="d2_员工代号" class="textfield" onblur="getEmp(this)" /></td>
+<td><input type="text" name="d2_姓名" class="textfield" readonly="readonly"/></td>
+<td><select name="d2_奖惩项目" class="textfield" onchange="Award(this)">
+<option value="奖点">奖点</option>
+<option value="惩点">惩点</option>
+</select>
+</td>
+<td><input type="text" name="d2_奖点数" class="number textfield" value="0" onfocus="Award(this)"/></td>
+<td><input type="text" name="d2_惩点数" class="number textfield" value="0" onfocus="Award(this)"/></td>
+<td><input type="text" name="d2_事由" class="textfield"/></td>
+<td><input type="text" name="d2_按照规定" class="textfield" onfocus="setAotu(this)"/></td>
+<td><input type="text" name="d2_工作岗位" class="textfield" readonly="readonly"/></td>
+<td><input type="text" name="d2_职等" class="textfield" readonly="readonly"/></td>
+<td align="left"><input type="button" onClick="Delete(this,'t2')" style="background:no-repeat center url(../Images/delete.gif);width:20px; height:20px;" class="button"/>
+</td>
+</tr>
+</tbody>
+</table>
+ 	</div>
+</div>
+
+      </td>
+      </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" colspan="8" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input type="submit" class="submit button"  value="保存" style="WIDTH: 80;">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="$('#addDiv').hide('slow').css('z-index','500');">&nbsp;
+	  </td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+</div>
+<div id="listDiv" style="width:100%;top:0;left:20;display:none;background-color:#ffffff;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-x:hidden; overflow-y:scroll; z-index:550">
+</div>
+
+</BODY>
+</HTML>

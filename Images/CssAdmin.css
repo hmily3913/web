@@ -1,0 +1,179 @@
+﻿body {
+	background-color: #FFFFFF;
+	font-family:"宋体";
+	font-size: 12px;
+	line-height: 16px;
+}
+A:link {
+    color: #2f2f2f;
+	text-decoration: none;
+}
+A:visited {
+    color: #2f2f2f;
+	text-decoration: none;
+}
+A:hover { 
+	color: #FF6600;
+	text-decoration: none;
+}
+td {
+    font-family:"宋体";
+	font-size: 12px;
+	color: #2f2f2f;
+	line-height: 16px;
+}
+textarea {
+  font-family:"宋体";
+	font-size: 12px;
+}
+.tablemenu {
+    background: url(images/flexigrid/headbg.gif) repeat-x top;
+    border: 1px solid #99bbe8;
+    border-top: 0px;
+    font-weight: bold;
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+		height:24px;
+}
+.toolbar
+{
+    background:#ccc url(images/flexigrid/tbg.gif) repeat-x top;
+    position: relative;	
+    height:25px;	
+    border: 1px solid #99bbe8;
+    border-top:0px;	  
+    overflow: hidden;
+}
+
+/* 后台管理导航-------------------------------------- */
+.SystemLeft-header{
+	padding:5px;
+	line-height:15px;
+	color:#15428b;
+	font-weight:bold;
+	font-size:12px;
+	background:url(images/flexigrid/headbg.gif) repeat-x;
+	position:relative;
+	border:1px solid #99BBE8;
+	border-width: 0 0 1px 0;
+}
+
+td.SystemLeft {
+    font-family:"宋体";
+	font-size: 12px;
+	color: #ffffff;
+}
+td.SystemLeft A:link {
+    color: #003EBD;
+	text-decoration: none;
+}
+td.SystemLeft A:visited {
+    color: #003EBD;
+	text-decoration: none;
+}
+td.SystemLeft A:hover { 
+	color: #ffffff;
+	text-decoration: none;
+}
+textarea.ConstSet {
+	background-color: #F8FAFC;
+	border: 1px solid #8DB5E9;
+	border-top: #8DB5E9 1px ridge; 
+	border-left: #8DB5E9 1px ridge; 
+    color: #333333;
+	scrollbar-3dlight-color:#DAE4EF;
+	scrollbar-arrow-color:#FFFFFF;
+	scrollbar-darkshadow-color:#DAE4EF;
+	scrollbar-face-color:#DAE4EF;
+	scrollbar-highlight-color:#DAE4EF;
+	scrollbar-shadow-color:#DAE4EF;
+	scrollbar-track-color:#F8FAFC;
+}
+.button { 
+	border-left: #ffffff 1px ridge; 
+	border-right: #333333 1px ridge; 
+	border-top: #ffffff 1px ridge; 
+	border-bottom: #1c1c1c 1px ridge; 
+    font-family:"宋体";
+	font-size: 12px;
+    color: #1c1c1c; 
+	background-color: #EBF2F9; 
+	cursor: hand; 
+}
+.textfield{
+	border-top-width:1px;
+	border-bottom-width:2px;
+	border-left-width:1px;
+	border-right-width:2px;
+	font-size: 12px;
+	color: #2f2f2f;
+	width:90%;
+}
+.txt{
+	border-top:0px;
+	border-bottom:1px solid black;
+	border-left:0px;
+	border-right:0px;
+	font-size: 12px;
+	color: #2f2f2f;
+	background:;
+}
+.textdetail{
+	border-top-width:0px;
+	border-bottom-width:0px;
+	border-left-width:0px;
+	border-right-width:0px;
+	font-size: 12px;
+	color: #2f2f2f;
+	width:96%;
+	height:100%;
+}
+.adsearch{
+	background: url(images/flexigrid/headbg.gif) repeat-x top;
+	height:25px; 
+	font-size:12px;
+	border: 1px solid #99bbe8;
+	border-top: 0px;
+	font-weight: bold;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.adsearchsel{
+	height:18px; 
+	font-size:12px;
+}
+.TitleRow   
+{   
+position:relative;   
+top:expression(this.offsetParent.scrollTop);   
+};   
+.TitleCol   
+{   
+position:relative;   
+left: expression(this.parentElement.offsetParent.scrollLeft);
+};   
+.DataCol   
+{   
+position:relative;   
+left: expression(this.parentElement.offsetParent.parentElement.scrollLeft);
+};   
+
+/* 验证信息-------------------------------------- */
+input.error { border: 1px solid red; }
+label.error {
+background:url("unchecked.gif") no-repeat 0px 0px;
+padding-left: 16px;
+padding-bottom: 2px;
+font-weight: bold;
+color: #EA5200;
+}
+label.checked {
+background:url("checked.gif") no-repeat 0px 0px;
+}
+
+<style media=print> 
+.Noprint{display:none;} 
+.PageNext{page-break-after: always;} 
+</style>

@@ -1,0 +1,609 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jquery.tools.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.tools.min.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<script language="javascript" src="../Script/jquery.setTime.js"></script>
+<script language="javascript" src="../Script/xheditor-zh-cn.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+.ClearHide{display:none}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'WorkInjuryDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '单号', name : 'SerialNum', width : 50, sortable : true, align: 'left'},
+	{display: '伤者姓名', name : 'RegisterName', width : 50, sortable : true, align: 'left'},
+	{display: '发生时间', name : 'RegDate', width : 80, sortable : true, align: 'left'},
+	{display: '部门', name : 'Departmentname', width : 50, sortable : true, align: 'left'},
+	{display: '发生地点', name : 'Scene', width : 100, sortable : true, align: 'left'},
+	{display: '入职时间', name : 'InDate', width : 50, sortable : true, align: 'left'},
+	{display: '岗位', name : 'Position', width : 30, sortable : true, align: 'left'},
+	{display: '工伤类型', name : 'InjuryType', width : 40, sortable : true, align: 'left'},
+	{display: '参保', name : 'InsuranceFlag', width : 20, sortable : true, align: 'left'},
+	{display: '保单号', name : 'InsuranceId', width : 40, sortable : true, align: 'left'},
+	{display: '审核状态', name : 'CheckFlag', width : 40, sortable : true, align: 'left'},
+	{display: '详细说明', name : 'Details', width : 100, sortable : true, align: 'left'},
+	{display: '诊断结果', name : 'Diagnosis', width : 100, sortable : true, align: 'left'},
+	{display: '原因分类', name : 'CauseType', width : 50, sortable : true, align: 'left'},
+	{display: '原因分析', name : 'CauseAnalys', width : 100, sortable : true, align: 'left'},
+	{display: '措施', name : 'Measures', width : 100, sortable : true, align: 'left'},
+	{display: '处理进度', name : 'ProcessFlow', width : 100, sortable : true, align: 'left'},
+	{display: '是否结清', name : 'ClearFlag', width : 40, sortable : true, align: 'left'},
+	{display: '结清日期', name : 'ClearDate', width : 50, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '审核',  onpress : test},
+		{separator: true},
+		{name: '反审核',  onpress : test},
+		{separator: true},
+		{name: '实施',  onpress : test},
+		{separator: true},
+		{name: '打印',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '单号', name : 'SerialNum', isdefault: true},
+		{display: '伤者姓名', name : 'RegisterName'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: true,
+	striped:false,//
+	usepager: true,
+	title: '工伤事故报告书',
+	showTableToggleBtn: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	function rowdbclick(rowData){
+//		$('#AddForm').resetForm();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		getInfo('SerialNum');
+				$('#Remark').xheditor({skin:'vista',width:'100%',height:'50',upImgUrl:'../Include/UpLoadAjax.asp?immediate=1',upLinkUrl:'../Include/UpLoadAjax.asp',upLinkExt:'doc,xls,pdf,jpg,bmp'});
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+		$(".EditHide").show('fast');
+		$(".ClearHide").hide('fast');
+	}
+	
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要删除单号为：' + SNum + ' 的记录?')){
+				  $.post('WorkInjuryDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#detailType').val('AddNew');
+//				var myDate=new Date();
+//				var nowTime=myDate.getFullYear()+"-"+(myDate.getMonth()+1)+"-"+myDate.getDate();
+//				$('#RegDate').val(nowTime);
+				$("#addDiv").show("slow");
+				$(".EditHide").show('fast');
+				$(".ClearHide").hide('fast');
+			}			
+		else if (com=='维护')
+			{
+//				$('#AddForm').resetForm();
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				$('#SerialNum').val($('.trSelected', grid).attr("id").replace("row",""));
+				getInfo('SerialNum');
+				$('#Remark').xheditor({skin:'vista',width:'100%',height:'50',upImgUrl:'../Include/UpLoadAjax.asp?immediate=1',upLinkUrl:'../Include/UpLoadAjax.asp',upLinkExt:'doc,xls,pdf,jpg,bmp'});
+				$("#addDiv").show("slow");
+				$('#detailType').val('Edit');
+				$(".EditHide").show('fast');
+				$(".ClearHide").hide('fast');
+			}			
+		else if (com=='审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要审核单号为：' + SNum + ' 的记录?')){
+				  $.post('WorkInjuryDetails.asp?showType=DataProcess&detailType=Check',{"SerialNum":SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}			
+		else if (com=='反审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要审核单号为：' + SNum + ' 的记录?')){
+				  $.post('WorkInjuryDetails.asp?showType=DataProcess&detailType=unCheck',{"SerialNum":SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}			
+		else if (com=='实施')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				$('#SerialNum').val($('.trSelected', grid).attr("id").replace("row",""));
+				getInfo('SerialNum');
+				$('#ClearDate').datepick({dateFormat: 'yyyy-mm-dd'});
+				$('#Remark').xheditor({skin:'vista',width:'100%',height:'50',upImgUrl:'../Include/UpLoadAjax.asp?immediate=1',upLinkUrl:'../Include/UpLoadAjax.asp',upLinkExt:'doc,xls,pdf,jpg,bmp'});
+				$("#addDiv").show("slow");
+				$(".EditHide").hide('fast');
+				$(".ClearHide").show('fast');
+				var tbdetail=document.getElementById("TbDetails");
+				$.each(tbdetail.rows,function(a,row){
+				  if(a>1)$(tbdetail.rows[2]).remove();
+				});
+				  $.post('WorkInjuryDetails.asp?showType=getInfo&detailType=ShowBorrow',{InfoID:SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else{
+					   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+					   $.each(datajson.Borrows,function (i, Borrow){
+						var CloneNodeTr=tbdetail.rows[1].cloneNode(true);
+						CloneNodeTr.style.display="block";
+					     $(':input',CloneNodeTr).each(function(j,fieldone){
+						   if(fieldone.name)
+						     fieldone.value=Borrow[fieldone.name];
+						 });
+						tbdetail.appendChild(CloneNodeTr);
+					   });
+					}
+				  });
+			}			
+		else if (com=='打印')
+			{
+			var txt='请选择要打印的格式：<select id="RType" name="RType">';
+				txt+='<option value="doc">文档</option>';
+				txt+='<option value="xls">表格</option>';
+				txt+='</select>';
+				$.prompt(txt,{
+					buttons: { 导出: 'outprint' },
+					submit:function(v,m,f){ 
+						if(v=='outprint'){
+							if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+							var SNum=$('.trSelected', grid).attr("id").replace("row","");
+							window.open("WorkInjuryDetails.asp?showType=getInfo&detailType="+f.RType+"&InfoID="+SNum,"Print","","false");
+							$.prompt.close();
+						}
+						return false; 
+					 }
+				 });
+
+			}			
+	}
+function closead1(){
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("WorkInjuryDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+					 if(fieldone.id.substr(0,2)=='GJ'){
+					   document.getElementById(fieldone.id).checked=false;
+					   if(datajson.fieldValue[0].InjuryType.indexOf($('#'+fieldone.id).val())>-1)
+					     document.getElementById(fieldone.id).checked=true;
+					 }else{
+					   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+					   if(datajson.fieldValue[0][fieldone.id])
+					     $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+					 }
+				 }
+			   });
+		   }
+		   else if(obj=="Register"){
+		   $("#Register").val(data.split('###')[0]);
+		   $("#RegisterName").val(data.split('###')[1]);
+		   $("#Department").val(data.split('###')[2]);
+		   $("#Departmentname").val(data.split('###')[3]);
+		   $("#Gender").val(data.split('###')[4]);
+		   $("#Position").val(data.split('###')[5]);
+		   $("#InDate").val(data.split('###')[6]);
+		   $("#Ages").val(data.split('###')[10]);
+		   $("#CardId").val(data.split('###')[11]);
+		   $("#Address").val(data.split('###')[12]);
+		   if(data.split('###')[7]=='工伤'){
+		     $("#InsuranceFlag").val('是');
+		     $("#InsuranceId").val(data.split('###')[8]);
+		   }else if(data.split('###')[7]=='社保'){
+		     $("#InsuranceFlag").val('是');
+		     $("#InsuranceId").val(data.split('###')[9]);
+		   }else{
+		     $("#InsuranceFlag").val('否');
+		     $("#InsuranceId").val('');
+		   }
+		   }
+		 }
+	   });
+}
+function toSubmit(){
+  $.post('WorkInjuryDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+    if(data.indexOf("###")==-1) alert(data);
+	else $("#flex1").flexReload();
+  });
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+function FeecheckNum(obj){
+  if(checkNum(obj)){
+    var Fee1=parseFloat($("#MedicalFee").val());
+    var Fee2=parseFloat($("#InsuranceSubsidyFee").val());
+    var Fee3=parseFloat($("#CompanySubsidyFee").val());
+    var Fee4=parseFloat($("#InjuryLeaveFee").val());
+    var Fee5=parseFloat($("#BorrowFee").val());
+    var Fee6=parseFloat($("#MedicalFee2").val());
+    var Fee7=parseFloat($("#AppraisalFee").val());
+    var Fee8=parseFloat($("#OtherFee").val());
+	var FeeAll=Math.round((Fee1+Fee2+Fee3+Fee4+Fee6+Fee7+Fee8)*100)/100;
+	var FeeDiff=Math.round((FeeAll-Fee5)*100)/100;
+	$("#ReimburseFee").val(FeeAll)
+    $("#Balance").val(FeeDiff);
+  }
+}
+function AddRow(){
+	var tbdetail=document.getElementById("TbDetails");
+	var CloneNodeTr=tbdetail.rows[1].cloneNode(true);
+	CloneNodeTr.style.display="block";
+	tbdetail.appendChild(CloneNodeTr);
+}
+function SaveRow(obj){
+  $.post('WorkInjuryDetails.asp?showType=DataProcess',{
+    detailType:'Borrow',
+    FEntryID:$(':input',$(obj).parent().parent())[0].value,
+    EmpDepart:$(':input',$(obj).parent().parent())[1].value,
+    EmpName:$(':input',$(obj).parent().parent())[2].value,
+    BorrowDate:$(':input',$(obj).parent().parent())[3].value,
+    BorrowMoney:$(':input',$(obj).parent().parent())[4].value,
+	Snum:$('#SerialNum').val()
+  },function(data){
+    if(data.indexOf("###")==-1) alert(data);
+	else{
+	  $(':input',$(obj).parent().parent())[0].value=data.split('###')[1]
+	  var allBorrow=0;
+	  for(var n=1;n<$(":input[name='BorrowMoney']",$('#TbDetails')).length;n++){
+	    allBorrow+=parseFloat($(":input[name='BorrowMoney']",$('#TbDetails'))[n].value);
+	  }
+	  var ReimburseFee=parseFloat($('#ReimburseFee').val());
+	  var DiffFee=ReimburseFee-allBorrow;
+	  $('#BorrowFee').val(allBorrow);
+	  $('#Balance').val(DiffFee);
+	}
+  });
+}
+function DeleteRow(obj){
+  if($(':input',$(obj).parent().parent())[0].value!='')
+	  $.post('WorkInjuryDetails.asp?showType=DataProcess',{
+		detailType:'DeleteBorrow',
+		FEntryID:$(':input',$(obj).parent().parent())[0].value,
+		Snum:$('#SerialNum').val()
+	  },function(data){
+		if(data.indexOf("###")==-1) alert(data);
+		else {
+		  obj.parentNode.parentNode.parentNode.removeChild(obj.parentNode.parentNode);
+		  var allBorrow=0;
+		  for(var n=1;n<$(":input[name='BorrowMoney']",$('#TbDetails')).length;n++){
+			allBorrow+=parseFloat($(":input[name='BorrowMoney']",$('#TbDetails'))[n].value);
+		  }
+		  var ReimburseFee=parseFloat($('#ReimburseFee').val());
+		  var DiffFee=ReimburseFee-allBorrow;
+		  $('#BorrowFee').val(allBorrow);
+		  $('#Balance').val(DiffFee);
+		}
+	  });
+  else
+    obj.parentNode.parentNode.parentNode.removeChild(obj.parentNode.parentNode);
+}
+function showqianc(obj){
+	if($('#'+obj).val().length==0){alert('请先输入签呈单号！');return false;}
+	$('#qiancmain').load("WorkInjuryDetails.asp #qianc",{
+	  showType:'getInfo',
+		detailType:'qiancheng',
+	  InfoID:$('#'+obj).val()
+	 },function(response, status, xhr){
+	  if (status =="success") {
+			$('#qiancmain').show(); 
+			$('#qiancmain').easydrag(); 
+			$("#qiancmain").setHandler("formove2"); 
+			$(".css-tabs:first").tabs(".css-panes:first > div");
+	  }	
+	})
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>工伤事故报告书</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" nowrap bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id="editNews">
+      <tr>
+        <td height="20" align="left" width="10%">单据号：</td>
+        <td width="15%">
+		<input name="SerialNum" type="text" class="textfield" id="SerialNum" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">伤者工号：</td>
+        <td width="15%"><input name="Register" type="text" class="textfield" id="Register" value="" maxlength="100" onBlur="getInfo('Register')"></td>
+        <td height="20" align="left" width="10%">伤者姓名：</td>
+        <td width="15%"><input name="RegisterName" type="text" class="textfield" id="RegisterName" value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left" width="10%">性别：</td>
+        <td width="15%"><input name="Gender" type="text" class="textfield" id="Gender" value="" maxlength="100"  readonly="true"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">年龄：</td>
+        <td>
+	  <input type="hidden" name="CardId" id="CardId" />
+	  <input type="hidden" name="Address" id="Address" />
+		<input name="Ages" type="text" class="textfield" id="Ages" value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">部门编号：</td>
+        <td><input name="Department" type="text" class="textfield" id="Department" value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">部门名称：</td>
+        <td><input name="Departmentname" type="text" class="textfield" id="Departmentname"  value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">工种：</td>
+        <td><input name="Position" type="text" class="textfield" id="Position"  value="" maxlength="100"  readonly="true"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">入职时间：</td>
+        <td><input name="InDate" type="text" class="textfield" id="InDate"  value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">发生时间：</td>
+        <td><input name="RegDate" type="text" class="textfield" id="RegDate"  value="" maxlength="100" onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})" style="width:50%">
+        <input type="text" name="StartTime" class="textfield" onfocus="$(this).setTime()" style="width:25%"/>
+        </td>
+        <td height="20" align="left">发生地点：</td>
+        <td>
+		<input name="Scene" type="text" class="textfield" id="Scene"  value="" maxlength="100" >
+		</td>
+        <td height="20" align="left">是否参保：</td>
+        <td>
+		<input name="InsuranceFlag" type="text" class="textfield" id="InsuranceFlag"  value="" maxlength="100"  readonly="true">
+		</td>
+      </tr>
+      <tr>
+        <td height="20" align="left">保险编号：</td>
+        <td><input name="InsuranceId" type="text" class="textfield" id="InsuranceId"  value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" >事故类型：</td>
+        <td colspan="5">
+<input name="GJ01" id="GJ01" type="checkbox" value="轻伤," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ01">&nbsp;轻伤</label>
+<input name="GJ02" id="GJ02" type="checkbox" value="重伤," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ02">&nbsp;重伤</label>
+<input name="GJ03" id="GJ03" type="checkbox" value="死亡," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ03">&nbsp;死亡</label>
+<input name="GJ04" id="GJ04" type="checkbox" value="机械," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ04">&nbsp;机械</label>
+<input name="GJ05" id="GJ05" type="checkbox" value="交通," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ05">&nbsp;交通</label>
+<input name="GJ06" id="GJ06" type="checkbox" value="火灾," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ06">&nbsp;火灾</label>
+<input name="GJ07" id="GJ07" type="checkbox" value="电击," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ07">&nbsp;电击</label>
+<input name="GJ08" id="GJ08" type="checkbox" value="猝死," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ08">&nbsp;猝死</label>
+<input name="GJ09" id="GJ09" type="checkbox" value="职业病," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ09">&nbsp;职业病</label>
+<input name="GJ10" id="GJ10" type="checkbox" value="其他," style="HEIGHT: 13px;WIDTH: 13px;" ><label for="GJ10">&nbsp;其他</label>
+		</td>
+      </tr>
+      <tr class="EditHide">
+        <td height="80" align="left">事故发生详细情况：</td>
+        <td colspan="7">
+	  <textarea name="Details" id="Details" style="width:90%; height:80px; "></textarea>
+	  </td>
+      </tr>
+      <tr class="EditHide">
+        <td height="60" align="left">原因分析：</td>
+        <td>
+		<select name="CauseType" id="CauseType">
+		<option value="自身原因">自身原因</option>
+		<option value="非自身原因">非自身原因</option>
+		</select>
+		</td>
+        <td colspan="6">
+	  <textarea name="CauseAnalys" id="CauseAnalys" style="width:88%; height:60px; "></textarea>
+	  </td>
+      </tr>
+      <tr class="EditHide">
+        <td height="60" align="left">改正及预防措施：</td>
+        <td colspan="7">
+	  <textarea name="Measures" id="Measures" style="width:90%; height:60px; "></textarea>
+	  </td>
+      </tr>
+      <tr>
+        <td height="20" align="left">签呈单号1：</td>
+        <td>
+		<input name="qiancheng1" type="text" class="textfield" id="qiancheng1" value="" maxlength="100" style="width:70%">
+    <input type="button" style='background: url("../images/images/flexigrid/magnifier.png") no-repeat scroll center center transparent; height:22px; width:22px' title="查看签呈详细情况" onclick='showqianc("qiancheng1")'/>
+    </td>
+        <td height="20" align="left">签呈单号2：</td>
+        <td>
+		<input name="qiancheng2" type="text" class="textfield" id="qiancheng2" value="" maxlength="100" style="width:70%">
+    <input type="button" style='background: url("../images/images/flexigrid/magnifier.png") no-repeat scroll center center transparent; height:22px; width:22px' title="查看签呈详细情况" onclick='showqianc("qiancheng2")'/>
+    </td>
+        <td height="20" align="left">签呈单号3：</td>
+        <td>
+		<input name="qiancheng3" type="text" class="textfield" id="qiancheng3" value="" maxlength="100" style="width:70%">
+    <input type="button" style='background: url("../images/images/flexigrid/magnifier.png") no-repeat scroll center center transparent; height:22px; width:22px'  title="查看签呈详细情况" onclick='showqianc("qiancheng3")'/>
+    </td>
+        <td height="20" align="left"></td>
+        <td></td>
+      </tr>
+      <tr>
+		<td colspan="8"><fieldset><legend>审核：</legend>
+    部门/日期：<input type="text" name="DepartReplyer" id="DepartReplyer" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="DepartReplyDate" id="DepartReplyDate" class="txt" readonly="readonly"/>&nbsp;
+    人资/日期：<input type="text" name="RelatedReplyer" id="RelatedReplyer" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="RelatedReplyDate" id="RelatedReplyDate" class="txt" readonly="readonly"/>&nbsp;<br />
+    财务/日期：<input type="text" name="Cwer" id="Cwer" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="CwDate" id="CwDate" class="txt" readonly="readonly"/>&nbsp;
+    审批/日期：<input type="text" name="DirectorReplyer" id="DirectorReplyer" class="txt" readonly="readonly"/>&nbsp;
+    <input type="text" name="DirectorReplyDate" id="DirectorReplyDate" class="txt" readonly="readonly"/>&nbsp;
+		  </fieldset>
+		</td>
+      </tr>
+	<tr bgcolor="#99BBE8" class="EditHide">
+	  <td align="center" colspan="8">
+	  <input type="hidden" name="CheckFlag" id="CheckFlag" value="">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input name="submitSaveAdd" type="button" class="button"  value="保存" style="WIDTH: 80;"  onClick="toSubmit(this)">&nbsp;
+			<input type="button" class="button"  value="查看实施进度" style="WIDTH: 120;"  onClick="$('.ClearHide').show('fast');	">&nbsp;
+	  </td>
+	</tr>
+      <tr class="ClearHide">
+        <td height="20" align="left">就诊医院：</td>
+        <td><input name="MedicalHospital" type="text" class="textfield" id="MedicalHospital" value="" maxlength="200" ></td>
+        <td height="20" align="left">诊断结果：</td>
+        <td colspan="5"><input name="Diagnosis" type="text" class="textfield" id="Diagnosis" style="width:100% " value="" maxlength="200" ></td>
+      </tr>
+      <tr class="ClearHide">
+        <td height="20" align="left">处理进度：</td>
+        <td colspan="5"><input name="ProcessFlow" type="text" class="textfield" id="ProcessFlow" style="width:90% " value="" maxlength="500"></td>
+        <td height="20" align="left">伤残等级：</td>
+        <td><select id="InjuryLevel" name="InjuryLevel" class="textfield">
+        <option value=""></option>
+        <option value="0级">0级</option>
+        <option value="1级">1级</option>
+        <option value="2级">2级</option>
+        <option value="3级">3级</option>
+        <option value="4级">4级</option>
+        <option value="5级">5级</option>
+        <option value="6级">6级</option>
+        <option value="7级">7级</option>
+        <option value="8级">8级</option>
+        <option value="9级">9级</option>
+        <option value="10级">10级</option>
+        </select></td>
+      </tr>
+      <tr class="ClearHide">
+        <td height="20" align="left">处理流程：</td>
+        <td colspan="7"><a href="javascript:void(0)" onclick="$('#ProcessFlow').val('治疗中')">1、治疗中</a>→
+        <a href="javascript:void(0)" onclick="$('#ProcessFlow').val('住院中')">2、住院中</a>→
+        <a href="javascript:void(0)" onclick="$('#ProcessFlow').val('出院工伤休假期间、工伤认定申请中')">3、出院工伤休假期间、工伤认定申请中</a>→
+        <a href="javascript:void(0)" onclick="$('#ProcessFlow').val('工伤假满，上班中')">4、工伤假满，上班中</a>→
+        <a href="javascript:void(0)" onclick="$('#ProcessFlow').val('伤残等级鉴定中');$('#AppraisalFee').val(300);">5、伤残等级鉴定中</a>→
+        <a href="javascript:void(0)" onclick="$('#ProcessFlow').val('社保局审核中')">6、社保局审核中</a>→
+        <a href="javascript:void(0)" onclick="$('#ProcessFlow').val('工伤理赔项目协商中')">7、工伤理赔项目协商中</a>→
+        <a href="javascript:void(0)" onclick="$('#ProcessFlow').val('财务审核中')">8、财务审核中</a>→
+        <a href="javascript:void(0)" onclick="$('#ProcessFlow').val('结案')">9、结案</a>。</td>
+      </tr>
+      <tr class="ClearHide">
+        <td height="20" align="left">医疗费用(社保局报销)</td>
+        <td><input name="MedicalFee" type="text" class="textfield" id="MedicalFee"  value="0" onblur="return FeecheckNum(this)"></td>
+        <td height="20" align="left">医疗费用(公司报销)</td>
+        <td><input name="MedicalFee2" type="text" class="textfield" id="MedicalFee2"  value="0" onblur="return FeecheckNum(this)"></td>
+        <td height="20" align="left">鉴定费：</td>
+        <td><input name="AppraisalFee" type="text" class="textfield" id="AppraisalFee"  value="0" onblur="return FeecheckNum(this)"></td>
+        <td height="20" align="left">社保伤残补贴：</td>
+        <td><input name="InsuranceSubsidyFee" type="text" class="textfield" id="InsuranceSubsidyFee"  value="0" onblur="return FeecheckNum(this)"></td>
+      </tr>
+      <tr class="ClearHide">
+        <td height="20" align="left">公司伤残补贴：</td>
+        <td><input name="CompanySubsidyFee" type="text" class="textfield" id="CompanySubsidyFee"  value="0" onblur="return FeecheckNum(this)"></td>
+        <td height="20" align="left">伤假费用：</td>
+        <td><input name="InjuryLeaveFee" type="text" class="textfield" id="InjuryLeaveFee"  value="0" onblur="return FeecheckNum(this)"></td>
+        <td height="20" align="left">其他费用：</td>
+        <td><input name="OtherFee" type="text" class="textfield" id="OtherFee"  value="0" onblur="return FeecheckNum(this)"></td>
+        <td height="20" align="left">借款：</td>
+        <td><input name="BorrowFee" type="text" class="textfield" id="BorrowFee"  value="0" readonly="true"></td>
+      </tr>
+      <tr class="ClearHide">
+        <td height="20" align="left">报销费用：</td>
+        <td><input name="ReimburseFee" type="text" class="textfield" id="ReimburseFee"  value="0" readonly="true"></td>
+        <td height="20" align="left">未结余额：</td>
+        <td><input name="Balance" type="text" class="textfield" id="Balance"  value="0" readonly="true"></td>
+        <td height="20" align="left">已结日期：</td>
+        <td><input name="ClearDate" type="text" class="textfield" id="ClearDate"  value="" onblur="return checkDate(this)"></td>
+        <td colspan="4"></td>
+      </tr>
+      <tr class="ClearHide">
+        <td height="50" align="left">备注：</td>
+        <td colspan="7">
+	  <textarea name="Remark" id="Remark" style="width:90%; height:50px; " ></textarea>
+	  </td>
+      </tr>
+	<tr bgcolor="#99BBE8" class="ClearHide">
+	  <td align="center" colspan="8"  class="toolbar">
+	  <input type="hidden" name="ClearFlag" id="ClearFlag" value="">
+	  <input name="addrow" type="button" class="button" value="增加借款" style="WIDTH: 80;" onClick="AddRow()">
+	<input type="button" class="button"  value="更新" style="WIDTH: 80;"  onClick="javascript:$('#detailType').val('Update');toSubmit(this);">&nbsp;
+	<input type="button" class="button"  value="结清" style="WIDTH: 80;"  onClick="javascript:$('#detailType').val('Clear');toSubmit(this);">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="closead1()">&nbsp;
+	  </td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+ <table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8" class="ClearHide">
+  <tbody id="TbDetails">
+  <tr>
+    <td width="20%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>借款部门</strong></font></td>
+    <td width="20%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>借款人姓名</strong></font></td>
+    <td width="20%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>借款日期</strong></font></td>
+    <td width="20%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>借款金额</strong></font></td>
+    <td width="20%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>操作</strong></font></td>
+  </tr>
+  <tr bgcolor='#EBF2F9' id="CloneNodeTr" onMouseOver = "this.style.backgroundColor = '#FFFFFF'" onMouseOut = "this.style.backgroundColor = ''" style='cursor:hand; display:none'>
+  <td ><input type="hidden" name="FEntryID" id="FEntryID" value="">
+  <input type="text" name="EmpDepart" value="" class="textfield" style="font-size:12px;"></td>
+  <td ><input type="text" class="textfield" name="EmpName" value="" style="font-size:12px;" ></td>
+  <td ><input type="text" class="textfield" name="BorrowDate" value="" style="font-size:12px;" onchange="return checkDate(this)"></td>
+  <td ><input type="text" class="textfield" name="BorrowMoney" value="" style="font-size:12px;" onchange="return checkNum(this)"></td>
+  <td >
+	<input type="button" class="button" value="保存" style="WIDTH: 80;" onClick="SaveRow(this)">
+	<input type="button" class="button" value="删除" style="WIDTH: 80;" onClick="DeleteRow(this)">
+  </td>
+  </tr>
+ </table>
+</div>
+
+<div id="qiancmain" style="width:80%;height:60%;top:20%;left:10%;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;">
+</div>
+</BODY>
+</HTML>

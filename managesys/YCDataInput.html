@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+导入说明<br />
+1.删除验厂考勤系统中所有考勤信息.
+2.根据格式上传各部门的考勤数据，<a href="../Upload/DownLoadFile/YCDataInput.xls" target="_blank">点击下载模版</a><br />
+<br />
+<input type="button" value="清空考勤" onclick="return ClearYC()"/><br />
+<input type="button" value="开始导入" onclick="return comitInputxls()"/><br />
+
+<input type="button" value="删除真实考勤中的多余帐号（工号为空）" onclick="return ClearUsers()"/><br />
+
+
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+function ClearYC(){
+	$('#loading-one').empty().append('正在清空数据...').parent().fadeIn('slow');
+	$.get("YCDataInputDetails.asp", { showType: "cleardata" },function(data){
+		$('#loading-one').empty().append('数据清理完毕.').parent().fadeOut('slow');
+		alert(data);
+	});
+}
+function ClearUsers(){
+	$('#loading-one').empty().append('正在清空数据...').parent().fadeIn('slow');
+	$.get("YCDataInputDetails.asp", { showType: "ClearUsers" },function(data){
+		$('#loading-one').empty().append('数据清理完毕.').parent().fadeOut('slow');
+		alert(data);
+	});
+}function comitInputxls(){
+	var txt='<form action="../Include/UpLoadAjax.asp" method="post" enctype="multipart/form-data" name="formUpload" id="formUpload"  style="margin:0; padding:0 ">';
+	txt+='<input type="file" name="filedata" size="13" multiple="">';
+	txt+='</FORM>';
+	$.prompt(txt,{
+		buttons: { 导入: 'Check'},
+		submit:function(v,m,f){ 
+			if(v=='Check'){
+				var options = { 
+						success:       showResponse  // post-submit callback 
+				}; 
+				$('#loading-one').empty().append('数据上传中...').parent().fadeIn('slow');
+				$('#formUpload').ajaxSubmit(options); 
+				// post-submit callback 
+				$.prompt.close();
+			}
+			return false; 
+		 }
+	 });
+}
+
+function showResponse(responseText, statusText)  {
+	var datajson=jQuery.parseJSON(responseText);
+	if(datajson.err==''){
+		$.get("YCDataInputDetails.asp", { showType: "xls2sql",InfoID: datajson.msg.url },function(data){
+			$('#loading-one').empty().append('页面载入完毕.').parent().fadeOut('slow');
+			alert(data);
+		});
+	}else{
+		$('#loading-one').empty().append('页面载入完毕.').parent().fadeOut('slow');
+		alert(datajson.err);
+	}
+}
+
+</script>
+
+<div id="loading" style="position:fixed !important;position:absolute;top:0;left:0;height:100%; width:100%; z-index:999; background:#000 url(../images/load.gif) no-repeat center center; opacity:0.6; filter:alpha(opacity=60);font-size:14px;line-height:20px;overflow:hidden; display:none">
+	<p id="loading-one" style="color:#fff;position:absolute; top:50%; left:50%; margin:20px 0 0 -50px; padding:3px 10px;">页面载入中...</p>
+</div>
+
+</BODY>
+</HTML>

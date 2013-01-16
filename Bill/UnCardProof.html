@@ -1,0 +1,334 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$("#AddForm").validate({
+		submitHandler:function(form){
+			$("input:submit").each(function() {this.disabled = true;});
+			$.post('UnCardProofDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+				if(data.indexOf("###")==-1) alert(data);
+				else $("#flex1").flexReload();
+				$("input:submit").each(function() {this.disabled = false;});
+			});
+			$("#addDiv").hide("slow");
+			$("#addDiv").css("z-index","500");
+		}
+	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'UnCardProofDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '单号', name : 'SerialNum', width : 30, sortable : true, align: 'left'},
+	{display: '未打卡日期', name : 'RegDate', width : 60, sortable : true, align: 'left'},
+	{display: '时间段', name : 'Period', width : 50, sortable : true, align: 'left'},
+	{display: '申请工号', name : 'RegisterID', width : 60, sortable : true, align: 'left'},
+	{display: '申请人', name : 'Register', width : 60, sortable : true, align: 'left'},
+	{display: '部门编号', name : 'Department', width : 40, sortable : true, align: 'left'},
+	{display: '部门名称', name : 'Departmentname', width : 60, sortable : true, align: 'left'},
+	{display: '理由', name : 'Reason', width : 60, sortable : true, align: 'left'},
+	{display: '审核状态', name : 'CheckFlag', width : 60, sortable : true, align: 'left'},
+	{display: '作废', name : 'CancelFlag', width : 60, sortable : true, align: 'left'},
+	{display: '备注', name : 'Remark', width : 60, sortable : true, align: 'left'},
+	{display: '登记人', name : 'Biller', width : 60, sortable : true, align: 'left'},
+	{display: '登记时间', name : 'BillDate', width : 60, sortable : true, align: 'left'},
+	{display: '审核人', name : 'Checker', width : 50, sortable : true, align: 'left'},
+	{display: '实施人', name : 'Hrer', width : 50, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '审核',  onpress : test},
+		{separator: true},
+		{name: '实施',  onpress : test},
+		{separator: true},
+		{name: '导出',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '申请工号', name : 'RegisterID', isdefault: true},
+		{display: '申请人', name : 'Register'},
+		{display: '理由', name : 'Reason'},
+		{display: '作废', name : 'CancelFlag'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: false,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '未打卡证明单',
+	showTableToggleBtn: true,
+	showcheckbox: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('input[name=SerialNum]',$('#TbDetails')).val($(rowData).data(("SerialNum")));
+		$('input[name=RegDate]',$('#TbDetails')).val($(rowData).data(("RegDate")));
+		$('input[name=RegisterID]',$('#TbDetails')).val($(rowData).data(("RegisterID")));
+		$('input[name=Register]',$('#TbDetails')).val($(rowData).data(("Register")));
+		$('input[name=Department]',$('#TbDetails')).val($(rowData).data(("Department")));
+		$('input[name=Departmentname]',$('#TbDetails')).val($(rowData).data(("Departmentname")));
+		$('select',$('#TbDetails')).val([$(rowData).data(("Period")),$(rowData).data(("Reason"))]);
+		$('#Remark',$('#TbDetails')).val($(rowData).data(("Remark")));
+		if($(rowData).data("Reason")=='公事公出')$('#cremark').show();
+		else $('#cremark').hide();
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('UnCardProofDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":AllSNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#detailType').val('AddNew');
+				var yestoday=showdate(0);
+				$('#RegDate').val(yestoday);
+				changeremark();
+				$("#addDiv").show("slow");
+			}			
+		else if (com=='审核')
+			{
+			if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+			var txt='当前未打卡理由为：<select id="cReason" name="cReason">';
+				txt+='<option value="忘打卡">忘打卡</option>';      
+				txt+='<option value="公事公出">公事公出</option>';
+				txt+='</select>';
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				$.prompt('',{
+					buttons: { 同意: 'outprint',作废:'Cancel' },
+					submit:function(v,m,f){ 
+						if(v=='outprint'){
+//							var SNum=$('.trSelected', grid).attr("id").replace("row","");
+							$.post('UnCardProofDetails.asp?showType=DataProcess&detailType=Check',{"SerialNum":AllSNum,"flag":0},function(data){
+								if(data.indexOf("###")==-1) alert(data);
+								else $("#flex1").flexReload();
+							});
+							$.prompt.close();
+						}
+						else if(v=='Cancel'){
+//							var SNum=$('.trSelected', grid).attr("id").replace("row","");
+							$.post('UnCardProofDetails.asp?showType=DataProcess&detailType=Check',{"SerialNum":AllSNum,"flag":1},function(data){
+								if(data.indexOf("###")==-1) alert(data);
+								else $("#flex1").flexReload();
+							});
+							$.prompt.close();
+						}
+						return false; 
+					 }
+				 });
+//				 $('#cReason').val($('.trSelected', grid).attr("ch").split('_ZZ$BH_')[7]);
+			}
+		else if (com=='实施')
+			{
+					if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+			var txt='';
+				$.prompt(txt,{
+					buttons: { 同意: 'outprint',作废:'Cancel' },
+					submit:function(v,m,f){ 
+						if(v=='outprint'){
+							var SNum=$('.trSelected', grid).attr("id").replace("row","");
+							$.post('UnCardProofDetails.asp?showType=DataProcess&detailType=Check',{"SerialNum":AllSNum,"flag":0},function(data){
+								if(data.indexOf("###")==-1) alert(data);
+								else $("#flex1").flexReload();
+							});
+							$.prompt.close();
+						}
+						else if(v=='Cancel'){
+							var SNum=$('.trSelected', grid).attr("id").replace("row","");
+							$.post('UnCardProofDetails.asp?showType=DataProcess&detailType=Check',{"SerialNum":AllSNum,"flag":1},function(data){
+								if(data.indexOf("###")==-1) alert(data);
+								else $("#flex1").flexReload();
+							});
+							$.prompt.close();
+						}
+						return false; 
+					 }
+				 });
+			}
+		else if (com=='导出'){
+				var txt='';
+				txt+='未打卡日期：从<input name="SDate" type="text" class="textfield" id="SDate" style="width:30%;" value="" maxlength="100"  onfocus="$(this).datepick()">到<input name="EDate" type="text" class="textfield" id="EDate" style="width:30%" value="" maxlength="100"  onfocus="$(this).datepick()"><br/><br/>';
+				$.prompt(txt,{
+					buttons: { 导出EXCEL: 'OutPut' },
+					submit:function(v,m,f){ 
+/*						if(v=='webLook'){
+							$.post('OvertimeDetails.asp',{
+								showType:'JCOutPut',
+								SDate:f.SDate,
+								EDate:f.EDate
+							 },function(data){
+								$.prompt.close();
+							});
+						}*/
+						if(v=='OutPut'){
+							window.open("UnCardProofDetails.asp?showType=Export&print_tag=1&SDate="+f.SDate+"&EDate="+f.EDate,"Print","","false");
+							$.prompt.close();
+						}
+						return false; 
+					 }
+				 });
+		}
+	}
+
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$("input:submit").each(function() {this.disabled = true;});
+	$.get("UnCardProofDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+					   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+					   if(datajson.fieldValue[0][fieldone.id])
+					     $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+					 }
+			   });
+		   }
+		   else if(obj=="RegisterID"){
+				 $("#RegisterID").val(data.split('###')[0]);
+				 $("#Register").val(data.split('###')[1]);
+				 $("#Department").val(data.split('###')[2]);
+				 $("#Departmentname").val(data.split('###')[3]);
+		   }
+		 }
+		 $("input:submit").each(function() {this.disabled = false;});
+	   });
+}
+function changeremark(){
+	if($('#Reason').val()=='忘打卡'){
+		$('#cremark').hide();
+		$('#Remark').removeClass('required');
+	}else{
+		$('#cremark').show();
+		$('#Remark').addClass('required');
+	}
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm" style="margin:0; padding:0 ">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="$('#addDiv').hide('slow').css('z-index','500');" >&nbsp;<strong>未打卡证明单</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+		<table width="100%" border="0" id="editDetails" cellpadding="3" cellspacing="1">
+		  <tbody id="TbDetails">
+      <tr>
+        <td height="20" align="left" width="10%">单据号：</td>
+        <td WIDTH='15%'>
+		<input name="SerialNum" type="text" class="textfield" id="SerialNum" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">申请人：</td>
+        <td  WIDTH='15%'><input name="RegisterID" type="text" class="required textfield" id="RegisterID" value="" maxlength="100" onBlur="getInfo('RegisterID')"></td>
+        <td height="20" align="left" width="10%">姓名：</td>
+        <td  WIDTH='15%'><input name="Register" type="text" class="required textfield" id="Register" value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left" width="10%">部门编号：</td>
+        <td width="15%"><input name="Department" type="text" class="textfield" id="Department" value="" maxlength="100"  readonly="true"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">部门名称：</td>
+        <td><input name="Departmentname" type="text" class="textfield" id="Departmentname"  value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">未打卡日期：</td>
+        <td><input name="RegDate" type="text" class="dateISO required textfield" id="RegDate"  value="" maxlength="100"  onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})"></td>
+        <td height="20" align="left">时间段：</td>
+        <td><select name="Period" id="Period">
+      <option value="上午">上午</option>
+      <option value="中午">中午</option>
+      <option value="下午">下午</option>
+      </select></td>
+        <td height="20" align="left">理由：</td>
+        <td><select name="Reason" id="Reason" onchange="changeremark()">
+      <option value="忘打卡">忘打卡</option>
+      <option value="公事公出">公事公出</option>
+      </select></td>
+			</tr>
+      <tr id="cremark" style="display:none">
+      <td >备注：</td>
+      <td colspan="7"><textarea class="textfield" id="Remark" name="Remark" style="height:80px; font-size:12px;"></textarea></td>
+      </tr>
+		  </tbody>
+		</table>
+		</td>
+  </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input type="submit" class="submit button"  value="保存" style="WIDTH: 80;">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="$('#addDiv').hide('slow').css('z-index','500');">&nbsp;
+	  </td>
+	</tr>
+</table>
+</form>
+</div>
+</BODY>
+</HTML>

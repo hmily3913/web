@@ -1,0 +1,452 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+    <title></title>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/zTreeStyle.css">
+<link type="text/css" rel="Stylesheet" href="../Images/explorer.css" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/zTreeStyle.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<style type="text/css">
+/* ------------- 右键菜单 -----------------  */
+
+div#rMenu {
+	background-color:#555555;
+	text-align: left;
+	padding:2px;
+}
+
+div#rMenu ul {
+	margin:1px 0;
+	padding:0 5px;
+	cursor: pointer;
+	list-style: none outside none;
+	background-color:#DFDFDF;
+}
+div#rMenu ul li {
+	margin:0;
+	padding:2px 0;
+}
+</style>
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/jquery.ztree-2.6.min.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript">
+
+	
+var zTree2;
+var setting2;
+	setting2 = {
+		expandSpeed:"",
+		dragCopy:true,
+		dragCopy:true,
+		keepParent: false,
+		keepLeaf: false,
+		async: true,
+		asyncParam: ["SerialNum"],
+		asyncParamOther : {"showType":"getInfo","detailType":"DocumentType"},
+		callback: {
+			beforeClick: zTreeOnBeforeClick,
+			click: zTreeOnClick2
+		}
+	};
+	function showMenu() {
+		setting2.asyncUrl= "DocumentDetails.asp";
+		hideRMenu();
+		var nodes = [];
+		setting2.async = true;
+		zTree2 = $("#dropdownMenu").zTree(setting2, nodes);
+		var cityObj = $("#TypeNameDetail");
+		var cityOffset = $("#TypeNameDetail").offset();
+		$("#DropdownMenuBackground").css({left:cityOffset.left + "px", top:cityOffset.top + cityObj.outerHeight() + "px"}).slideDown("fast");
+		
+	}
+	function hideMenu() {
+		$("#DropdownMenuBackground").hide();
+	}
+
+	function zTreeOnBeforeClick(treeId, treeNode) {
+		var check = (treeNode && !treeNode.isParent);
+		if (!check) alert("只能选择分类...");
+		return check;
+	}
+	
+	function zTreeOnClick2(event, treeId, treeNode) {
+		if (treeNode) {
+			var cityObj = $("#TypeNameDetail");
+			cityObj.attr("value", treeNode.name);
+			$('#TypeIDDetail').val(treeNode.SerialNum);
+			hideMenu();
+		}
+	}
+		
+var zTree1;
+var setting;
+var rMenu;
+	setting = {
+		expandSpeed:"",
+		dragCopy:true,
+		dragCopy:true,
+		keepParent: false,
+		keepLeaf: false,
+		async: true,
+		asyncParam: ["SerialNum"],
+		asyncParamOther : {"showType":"getInfo","detailType":"DocumentType"},
+		callback: {
+			click: zTreeOnClick,
+			rightClick: zTreeOnRightClick
+		}
+	};
+	$(document).ready(function(){
+		refreshTree();
+		$(".explorerState").text("当前目录: /");
+		rMenu = document.getElementById("rMenu");
+		$("body").bind("mousedown", 
+			function(event){
+				if (!(event.target.id == "rMenu" || $(event.target).parents("#rMenu").length>0)) {
+					rMenu.style.visibility = "hidden";
+				}
+			});
+		//查询
+    $("#zoom").click(function() {
+			seachFlex();
+    });
+    //添加
+    $("#newfile").click(function() {
+			var	txt='<iframe style="width: 349px; height: 220px;" src="../Script/xheditor_plugins/multiupload/multiupload.html" frameborder="0"  scrolling="no"><input type="hidden" id="upFilename" name="upFilename">'
+			$.prompt(txt);
+    });
+    //编辑
+    $("#edit").click(function() {
+			if($('.trSelected', $('#flex1')).length==0){alert('请先选择一个文档再进行操作！');return false;}
+			var SNum=$('.trSelected', $('#flex1')).attr("ch").split('_ZZ$BH_');
+			var txt='';
+			txt+=$(".explorerState").text()+'<br/>';
+			txt+='<input type="hidden" id=""DocumentID" name="DocumentID" value="'+SNum[0]+'">';
+			txt+='<input type="hidden" id="TypeIDDetail" name="TypeIDDetail" value="'+SNum[9]+'">';
+			txt+='系统文件：<input type="text" class="textfield" id="SystemName" name="SystemName" value="'+SNum[2]+'" readonly="true"><br/>';
+			txt+='文件名称：<input type="text" class="textfield" id="DocumentName" name="DocumentName" value="'+SNum[1]+'"><br/>';
+			txt+='描述一：<input type="text" class="textfield" id="Describ1" name="Describ1" value="'+SNum[3]+'"><br/>';
+			txt+='描述二：<input type="text" class="textfield" id="Describ2" name="Describ2" value="'+SNum[4]+'"><br/>';
+			txt+='描述三：<input type="text" class="textfield" id="Describ3" name="Describ3" value="'+SNum[5]+'"><br/>';
+			txt+='分类：<input type="text" class="textfield" id="TypeNameDetail" name="TypeNameDetail" value="" title="不填表示保持原分类！">&nbsp;<a id="menuBtn" href="#" onclick="showMenu(); return false;">选择</a><br/>';
+			$.prompt(txt,{
+				buttons: { 提交: 1},
+				submit:function(s,m,f){ 
+					if(s==1){
+						$.post('DocumentDetails.asp',{
+							showType:'DataProcess',
+							detailType:'EditFile',
+							TypeIDDetail:f.TypeIDDetail,
+							SystemName:f.SystemName,
+							DocumentName:f.DocumentName,
+							Describ1:f.Describ1,
+							Describ2:f.Describ2,
+							Describ3:f.Describ3
+						 },function(data){
+							alert(data);
+							if(data.indexOf('成功')>0)seachFlex();
+						});
+						$.prompt.close();
+					}
+					return false; 
+				 }
+			 });
+    });
+    //删除
+    $("#delete").click(function() {
+			if($('.trSelected', $('#flex1')).length==0){alert('请先选择一个文档再进行操作！');return false;}
+			var SNum=$('.trSelected', $('#flex1')).attr("ch").split('_ZZ$BH_')[1];
+			if (confirm('确定要删除文件：' + SNum + ' ?')){
+				$.post('DocumentDetails.asp?showType=DataProcess&detailType=DeleteFile',{"SerialNum":$('.trSelected', $('#flex1')).attr("id").replace("row","")},function(data){
+					 alert(data);
+				if(data.indexOf("成功")>-1)seachFlex();
+				});
+			}
+    });
+    //下载
+    $("#download").click(function() {
+			if($('.trSelected', $('#flex1')).length==0){alert('请先选择一个文档再进行操作！');return false;}
+			var SNum=$('.trSelected', $('#flex1')).attr("id").replace("row","");
+			window.open("DocumentDetails.asp?showType=DownLoad&SerialNum="+SNum);
+    });
+    //刷新
+    $("#refresh").click(function() {
+			seachFlex();
+    });
+	});
+	function callback(v){
+		$.prompt.close();
+		var txt='';
+		txt+=$(".explorerState").text()+'<br/>';
+		var srcNode = zTree1.getSelectedNode();
+		if (srcNode) {
+			txt+='<input type="hidden" id="TypeIDDetail" name="TypeIDDetail" value="'+srcNode.SerialNum+'">';
+		}else
+			txt+='<input type="hidden" id="TypeIDDetail" name="TypeIDDetail" value="0">';
+		txt+='系统文件：<input type="text" class="textfield" id="SystemName" name="SystemName" value="'+v[0].url+'" readonly="true"><br/>';
+		txt+='文件名称：<input type="text" class="textfield" id="DocumentName" name="DocumentName" value="'+v[0].localname+'"><br/>';
+		txt+='描述一：<input type="text" class="textfield" id="Describ1" name="Describ1" value=""><br/>';
+		txt+='描述二：<input type="text" class="textfield" id="Describ2" name="Describ2" value=""><br/>';
+		txt+='描述三：<input type="text" class="textfield" id="Describ3" name="Describ3" value=""><br/>';
+		$.prompt(txt,{
+			buttons: { 提交: 1},
+			submit:function(s,m,f){ 
+				if(s==1){
+					$.post('DocumentDetails.asp',{
+						showType:'DataProcess',
+						detailType:'AddFile',
+						TypeIDDetail:f.TypeIDDetail,
+						SystemName:f.SystemName,
+						DocumentName:f.DocumentName,
+						Describ1:f.Describ1,
+						Describ2:f.Describ2,
+						Describ3:f.Describ3
+					 },function(data){
+						alert(data);
+						if(data.indexOf('成功')>0)seachFlex();
+					});
+					$.prompt.close();
+				}
+				return false; 
+			 }
+		 });
+	}
+	
+	function zTreeOnClick(event, treeId, treeNode) {
+		var dir=getNodePath(treeNode);
+		$(".explorerState").text("当前目录: "+dir);
+		seachFlex();
+	}
+	function getNodePath(treeNode) {
+		if (!treeNode) return "/";
+		var p = treeNode.name;
+		var pNode = treeNode.parentNode;
+		while (pNode != null) {
+			p = pNode.name + "/" + p;
+			pNode = pNode.parentNode;
+		}
+		p = "/" + p;
+		return p;
+	}
+
+	function renameTreeNode(evt) {
+		var srcNode = zTree1.getSelectedNode();
+		if (!srcNode) {
+			alert("请先选中一个节点");
+			return;
+		}
+		hideRMenu();
+		$('#TypeSave').val('Edit');
+		$('#TypeID').val(srcNode.SerialNum);
+		$('#TypePsnum').val(srcNode.PSNum);
+		$('#TypeName').val(srcNode.name);
+		$("#editOne").show();
+		$("#editOne").css({"top":evt.clientY+"px", "left":evt.clientX+"px", "visibility":"visible"});
+	}
+	//右键菜单
+	function zTreeOnRightClick(event, treeId, treeNode) {
+		if (!treeNode && event.target.tagName.toLowerCase() != "button" && $(event.target).parents("a").length == 0) {
+			zTree1.cancelSelectedNode();
+			showRMenu("root", event.clientX, event.clientY);
+		} else if (treeNode && !treeNode.noR) {
+			zTree1.selectNode(treeNode);
+			showRMenu("node", event.clientX, event.clientY);
+		}
+	}
+	function showRMenu(type, x, y) {
+		$("#rMenu ul").show();
+		if (type=="root") {
+			$("#m_edit").hide();
+			$("#m_del").hide();
+			$("#m_check").hide();
+			$("#m_unCheck").hide();
+		}
+		$("#rMenu").css({"top":y+"px", "left":x+"px", "visibility":"visible"});
+	}
+	function hideRMenu() {
+		if (rMenu) rMenu.style.visibility = "hidden";
+	}
+	function addTreeNode(evt) {
+		hideRMenu();
+		var srcNode = zTree1.getSelectedNode();
+		$('#TypeSave').val('AddNew');
+		if (!srcNode) {
+			$('#TypePsnum').val(0);
+		}else{
+			$('#TypePsnum').val(srcNode.SerialNum);
+		}
+		$('#TypeID').val('');
+		$('#TypeName').val('');
+		$("#editOne").show();
+		$("#editOne").css({"top":evt.clientY+"px", "left":evt.clientX+"px", "visibility":"visible"});
+	}
+	function removeTreeNode() {
+		hideRMenu();
+		var node = zTree1.getSelectedNode();
+		if (node) {
+			if (node.nodes && node.nodes.length > 0) {
+				alert("要删除的节点是父节点，不允许执行删除操作，请先删除子节点！");
+				return ;
+			} else {
+				$.post('DocumentDetails.asp?showType=DataProcess&detailType=Delete',{
+				  SerialNum:node.SerialNum
+				},function(data){
+				  if(data.indexOf("###")==-1) alert(data);
+				  else {
+					zTree1.removeNode(node);
+				  }
+				});
+			}
+		}
+	}
+	
+	function refreshTree() {
+		setting.asyncUrl= "DocumentDetails.asp";
+		hideRMenu();
+		$('#editOne').hide();
+		var nodes = [];
+		setting.async = true;
+		zTree1 = $("#FileClass").zTree(setting, nodes);
+	}
+	function submitSave(){
+		var srcNode = zTree1.getSelectedNode();
+		$.post('DocumentDetails.asp?showType=DataProcess&detailType='+$('#TypeSave').val(),{
+		  TypeID:$('#TypeID').val(),
+		  TypeName:$('#TypeName').val(),
+		  TypePsnum:$('#TypePsnum').val()
+		},function(data){
+		  if(data.indexOf("###")==-1) alert(data);
+		  else {
+			$('#editOne').hide();
+			if($('#TypeSave').val()=='Edit'){
+				srcNode.SerialNum=$('#TypeID').val();
+				srcNode.name=$('#TypeName').val();
+				zTree1.updateNode(srcNode, true);
+			}else if ($('#TypeSave').val()=='AddNew'){
+				var newNode=jQuery.parseJSON(data.split('###')[1]);
+				zTree1.addNodes(srcNode, newNode);
+			}
+		  }
+		});
+	}
+
+</script>
+</head>
+<body>
+    <div>
+ 
+        <div id="file" class="explorer">
+        <div class="filetitle">
+        <div class="filetxtarea">
+            <input type="text" id="fileText" />
+            <img src="../Images/document/images/zoom.png" title="Zoom" id="zoom" class="filetxtbtn" />
+            <img src="../Images/document/images/loading.gif" title="Loading" id="loading" class="filetxtbtn"/>
+        </div>
+        <div class="fileoptarea"><div class="fileoptarea_in">
+<!--            <div class="fileopt_img"><img title="Create New Folder" src="../Images/document/images/add.png" /></div><div class="fileopt" id="new">新建文件夹</div> -->
+            <div class="fileopt_img"><img title="Create New Folder" src="../Images/document/images/addfile.png" /></div><div class="fileopt" id="newfile">添加文件</div> 
+            <div class="fileopt_img"><img title="Edit" src="../Images/document/images/edit.png" /></div><div class="fileopt" id="edit">编辑</div>
+            <div class="fileopt_img"><img title="Delete" src="../Images/document/images/delete.png" /></div><div class="fileopt" id="delete">删除</div>
+<!--            <div class="fileopt_img"><img title="Compress" src="../Images/document/images/compressed.png" /></div><div class="fileopt" id="compress">压缩</div>
+            <div class="fileopt_img"><img title="Decompress" src="../Images/document/images/compressed.png" /></div><div class="fileopt" id="decompress">解压缩</div>-->
+            <div class="fileopt_img"><img title="Download" src="../Images/document/images/download.png" /></div><div class="fileopt" id="download">下载</div>
+            <div class="fileopt_img"><img title="Refresh" src="../Images/document/images/refresh.png" /></div><div class="fileopt" id="refresh">刷新</div>
+        </div></div>
+        </div>
+    <div id="fileTree" class="fileTree">
+    <ul id="FileClass" class="tree"></ul>
+    </div>
+    <div id="fileGrid" class="fileGrid"><table id="flex1" style="display:none"></table></div>
+    <div id="dialog"></div>
+    <div class="uploadfilearea">
+<!--        <div class="uploadfilearea_in">
+        <input type="file" id="fileToUpload" name="fileToUpload" /><input type="button" value="上传" id="buttonUpload" />
+        </div>-->
+        <div class="explorerState"></div>
+    </div>
+    </div>
+        
+    </div>
+    
+<div id="rMenu" style="position:absolute; visibility:hidden;">
+<li>
+<ul id="m_add" onclick="addTreeNode(event);"><li>增加节点</li></ul>
+<ul id="m_edit" onclick="renameTreeNode(event);"><li>编辑节点</li></ul>
+<ul id="m_del" onclick="removeTreeNode();"><li>删除节点</li></ul>
+<ul id="m_reset" onclick="refreshTree();"><li>权限重新载入</li></ul>
+</li>
+</div>
+<div id="editOne" style="position:absolute; visibility:hidden;">
+<table width="auto" style="margin:0;text-align: left; padding:0; background-color:#EBF2F9; border:0; color:#FFFFFF;">
+<tr>
+<td>分类名称</td>
+<td>
+<input type="hidden" id="TypePsnum" name="TypePsnum" />
+<input type="hidden" id="TypeID" name="TypeID" />
+<input type="text" id="TypeName" name="TypeName"/>
+<input type="hidden" id="TypeSave" name="TypeSave" />
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<input type="button" value="确定" style="width:60px; height:16px; font-size:12px " onclick="submitSave()"/>
+<input type="button" value="取消" style="width:60px; height:16px; font-size:12px " onclick="$('#editOne').hide()"/></td>
+</tr>
+</table>
+</div>
+<script language="javascript">
+$("#flex1").flexigrid
+	({
+	url: 'DocumentDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '序号', name : 'SerialNum', width : 10, sortable : true, align: 'left',hide:true,toggle:false},
+	{display: '文件名', name : 'DocumentName', width : 80, sortable : true, align: 'left'},
+	{display: '存放名', name : 'SystemName', width : 80, sortable : true, align: 'left'},
+	{display: '描述1', name : 'Describ1', width : 80, sortable : true, align: 'left'},
+	{display: '描述2', name : 'Describ2', width : 80, sortable : true, align: 'left'},
+	{display: '描述3', name : 'Describ3', width : 80, sortable : true, align: 'left'},
+	{display: '登记人', name : 'Biller', width : 40, sortable : true, align: 'left'},
+	{display: '登记时间', name : 'BillDate', width : 50, sortable : true, align: 'left'},
+	{display: '作废', name : 'CancelFlag', width : 50, sortable : true, align: 'left'},
+	{display: '分类', name : 'TypeID', width : 10, sortable : true, align: 'left',hide:true,toggle:false}
+		],
+	onRowDblclick:rowdbclick,
+	onSuccess:successCallback,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: true,
+	striped:false,//
+	usepager: true,
+//	title: '文档管理',
+	showTableToggleBtn: true,
+	width:'100%',
+	height:417
+	}
+);
+function rowdbclick(rowData){
+}
+function successCallback(){
+	$('#loading').hide();
+}
+function seachFlex(){
+	$('#loading').show();
+	var srcNode = zTree1.getSelectedNode();
+	var TypeIDstr=srcNode?srcNode.SerialNum:0;
+	$("#flex1").flexOptions({newp: 1, params:[
+		{name:"TypeID",value:TypeIDstr},
+		{name:"KeyWork",value:$('#fileText').val()}]
+	});
+	$("#flex1").flexReload();
+}
+</script>
+<div id="DropdownMenuBackground" style="display:none; position:absolute; height:200px; min-width:150px; background-color:white;border:1px solid;overflow-y:auto;overflow-x:auto; z-index:999999">
+	<ul id="dropdownMenu" class="tree"></ul>
+</div>
+</body>
+</html>

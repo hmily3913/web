@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+    <title></title>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/zTreeStyle.css">
+<link type="text/css" rel="Stylesheet" href="../Images/explorer.css" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/zTreeStyle.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.autocomplete.css">
+<style type="text/css">
+/* ------------- 右键菜单 -----------------  */
+
+div#rMenu {
+	background-color:#555555;
+	text-align: left;
+	padding:2px;
+}
+
+div#rMenu ul {
+	margin:1px 0;
+	padding:0 5px;
+	cursor: pointer;
+	list-style: none outside none;
+	background-color:#DFDFDF;
+}
+div#rMenu ul li {
+	margin:0;
+	padding:2px 0;
+}
+</style>
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/jquery.ztree-2.6.min.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.autocomplete.pack.js"></script>
+<script language="javascript">
+var productList;
+var Autooptions={
+	minChars:1,
+	max:20,
+	width:250,
+	mustMatch: false,
+	matchContains:true,
+	formatItem:function(row,i,max){
+		return row.FNumber+' ['+row.FName+']';
+	},
+	formatMatch:function(row,i,max){return row.FNumber+' '+row.FName;},
+	formatResult:function(row){return row.FNumber;}
+};
+function initAutoComplete(data){
+	productList=data;
+	$('#fileText').focus().autocomplete(productList,Autooptions);
+}
+	
+var zTree1;
+var setting;
+var rMenu;
+	setting = {
+		expandSpeed:"",
+		dragCopy:true,
+		dragCopy:true,
+		keepParent: false,
+		keepLeaf: false,
+		isSimpleData : true,
+		treeNodeParentKey : "PSNum",
+		treeNodeKey : "SerialNum",
+		rootPID : 0,
+		async: true,
+		asyncParamOther : {"showType":"getInfo","detailType":"DocumentType"},
+		callback: {
+			click: zTreeOnClick
+		}
+	};
+function getEmp(obj){
+  if($('#FNumber',$('#jqi')).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("ContactsDetails.asp", { showType: "getInfo",detailType:"FNumber", InfoID: $('#FNumber',$('#jqi')).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+			 var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			 $(':input',$('#jqi')).each(function(i,fieldone){
+				 if(fieldone.id){
+					 if(datajson.fieldValue[0][fieldone.id])
+						 $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+				 }
+			 });
+		 }
+	 });
+}
+	$(document).ready(function(){
+		$.getJSON('ContactsDetails.asp?showType=getInfo&detailType=getModel',null,initAutoComplete);
+		refreshTree();
+		$(".explorerState").text("当前目录: /");
+		//查询
+    $("#zoom").click(function() {
+			zTree1.cancelSelectedNode();
+			$('#loading').show();
+			$("#flex1").flexOptions({newp: 1, params:[
+				{name:"KeyWork",value:$('#fileText').val()}]
+			});
+			$("#flex1").flexReload();
+    });
+    //添加
+    $("#newfile").click(function() {
+			var txt='';
+			txt+=$(".explorerState").text()+'<br/>';
+			txt+='<input type="hidden" id="FItemid" name="FItemid" value="0">';
+			txt+='工号：<input type="text" class="textfield" style="width:75%" id="FNumber" name="FNumber" value="" onBlur="return getEmp(this)"><br/>';
+			txt+='姓名：<input type="text" class="textfield" style="width:75%" id="FName" name="FName" value=""><br/>';
+			txt+='座机：<input type="text" class="textfield" style="width:75%" id="FPhone" name="FPhone" value=""><br/>';
+			txt+='手机：<input type="text" class="textfield" style="width:75%" id="FMobilePhone" name="FMobilePhone" value=""><br/>';
+			txt+='短号：<input type="text" class="textfield" style="width:75%" id="shortMobile" name="shortMobile" value=""><br/>';
+			txt+='邮箱：<input type="text" class="textfield" style="width:75%" id="Femail" name="Femail" value="" ><br/>';
+			$.prompt(txt,{
+				buttons: { 提交: 1},
+				submit:function(s,m,f){ 
+					if(s==1){
+						if(f.FItemid!=0){
+							$.post('ContactsDetails.asp',{
+								showType:'DataProcess',
+								detailType:'AddFile',
+								FItemid:f.FItemid,
+								FPhone:f.FPhone,
+								shortMobile:f.shortMobile,
+								FMobilePhone:f.FMobilePhone,
+								Femail:f.Femail
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)seachFlex();
+							});
+							$.prompt.close();
+						}else{
+							alert('员工为空或者对应员工不存在！');
+						}
+					}
+					return false; 
+				 }
+			 });
+    });
+    //编辑
+    $("#edit").click(function() {
+			if($('.trSelected', $('#flex1')).length==0){alert('请先选择一个员工再进行操作！');return false;}
+			var SNum=$('.trSelected', $('#flex1')).attr("ch").split('_ZZ$BH_');
+			var txt='';
+			txt+=$(".explorerState").text()+'<br/>';
+			txt+='<input type="hidden" id="FItemid" name="FItemid" value="'+SNum[0]+'">';
+			txt+='工号：'+SNum[2]+'<br/>';
+			txt+='姓名：'+SNum[3]+'<br/>';
+			txt+='座机：<input type="text" class="textfield" style="width:75%" id="FPhone" name="FPhone" value="'+SNum[4]+'"><br/>';
+			txt+='手机：<input type="text" class="textfield" style="width:75%" id="FMobilePhone" name="FMobilePhone" value="'+SNum[5]+'"><br/>';
+			txt+='短号：<input type="text" class="textfield" style="width:75%" id="shortMobile" name="shortMobile" value="'+SNum[6]+'"><br/>';
+			txt+='邮箱：<input type="text" class="textfield" style="width:75%" id="Femail" name="Femail" value="'+SNum[7]+'" ><br/>';
+			$.prompt(txt,{
+				buttons: { 提交: 1},
+				submit:function(s,m,f){ 
+					if(s==1){
+						$.post('ContactsDetails.asp',{
+							showType:'DataProcess',
+							detailType:'AddFile',
+							FItemid:f.FItemid,
+							FPhone:f.FPhone,
+							shortMobile:f.shortMobile,
+							FMobilePhone:f.FMobilePhone,
+							Femail:f.Femail
+						 },function(data){
+							alert(data);
+							if(data.indexOf('成功')>0)seachFlex();
+						});
+						$.prompt.close();
+					}
+					return false; 
+				 }
+			 });
+    });
+    //刷新
+    $("#refresh").click(function() {
+			seachFlex();
+    });
+	});
+	
+	function zTreeOnClick(event, treeId, treeNode) {
+		var dir=getNodePath(treeNode);
+		$(".explorerState").text("当前目录: "+dir);
+		seachFlex();
+	}
+	function getNodePath(treeNode) {
+		if (!treeNode) return "/";
+		var p = treeNode.name;
+		var pNode = treeNode.parentNode;
+		while (pNode != null) {
+			p = pNode.name + "/" + p;
+			pNode = pNode.parentNode;
+		}
+		p = "/" + p;
+		return p;
+	}
+
+	function refreshTree() {
+		setting.asyncUrl= "ContactsDetails.asp";
+		var nodes = [];
+		setting.async = true;
+		zTree1 = $("#FileClass").zTree(setting, nodes);
+	}
+
+</script>
+</head>
+<body>
+    <div>
+ 
+        <div id="file" class="explorer">
+        <div class="filetitle">
+        <div class="filetxtarea">
+            <input type="text" id="fileText" />
+            <img src="../Images/document/images/zoom.png" title="Zoom" id="zoom" class="filetxtbtn" />
+            <img src="../Images/document/images/loading.gif" title="Loading" id="loading" class="filetxtbtn"/>
+        </div>
+        <div class="fileoptarea"><div class="fileoptarea_in">
+            <div class="fileopt_img"><img title="Create New Folder" src="../Images/document/images/addfile.png" /></div><div class="fileopt" id="newfile">添加</div> 
+            <div class="fileopt_img"><img title="Edit" src="../Images/document/images/edit.png" /></div><div class="fileopt" id="edit">编辑</div>
+
+            <div class="fileopt_img"><img title="Refresh" src="../Images/document/images/refresh.png" /></div><div class="fileopt" id="refresh">刷新</div>
+        </div></div>
+        </div>
+    <div id="fileTree" class="fileTree">
+    <ul id="FileClass" class="tree"></ul>
+    </div>
+    <div id="fileGrid" class="fileGrid"><table id="flex1" style="display:none"></table></div>
+    <div id="dialog"></div>
+    <div class="uploadfilearea">
+<!--        <div class="uploadfilearea_in">
+        <input type="file" id="fileToUpload" name="fileToUpload" /><input type="button" value="上传" id="buttonUpload" />
+        </div>-->
+        <div class="explorerState"></div>
+    </div>
+    </div>
+        
+    </div>
+
+<script language="javascript">
+$("#flex1").flexigrid
+	({
+	url: 'ContactsDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '编号', name : 'FitemID', width : 10, sortable : true, align: 'left',hide:true,toggle:false},
+	{display: '部门编号', name : 'FDepartmentID', width : 10, sortable : true, align: 'left',hide:true,toggle:false},
+	{display: '工号', name : 'FNumber', width : 50, sortable : true, align: 'left'},
+	{display: '名称', name : 'FName', width : 50, sortable : true, align: 'left'},
+	{display: '座机', name : 'FPhone', width : 80, sortable : true, align: 'left'},
+	{display: '手机', name : 'FMobilePhone', width : 80, sortable : true, align: 'left'},
+	{display: '短号', name : 'shortMobile', width : 60, sortable : true, align: 'left'},
+	{display: '邮箱', name : 'Femail', width : 120, sortable : true, align: 'left'}
+		],
+	onRowDblclick:rowdbclick,
+	onSuccess:successCallback,
+	sortname: "FDepartmentID,FNumber",
+	sortorder: "asc",
+	singleSelect: true,
+	striped:false,//
+	usepager: true,
+//	title: '文档管理',
+	showTableToggleBtn: true,
+	width:'100%',
+	height:417
+	}
+);
+function rowdbclick(rowData){
+	var treeNode = zTree1.getNodeByParam("SerialNum", $(rowData).data("FDepartmentID"));
+	if (treeNode)zTree1.selectNode(treeNode);
+}
+function successCallback(){
+	$('#loading').hide();
+}
+function seachFlex(){
+	$('#loading').show();
+	var srcNode = zTree1.getSelectedNode();
+	var FDepartmentIDstr=srcNode?srcNode.SerialNum:0;
+	$("#flex1").flexOptions({newp: 1, params:[
+		{name:"FDepartmentID",value:FDepartmentIDstr}]
+	});
+	$("#flex1").flexReload();
+}
+</script>
+</body>
+</html>

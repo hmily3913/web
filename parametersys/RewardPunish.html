@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+.ClearHide{display:none}
+#slider { width: 700px; height: 390px; }
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+$("#flex1").flexigrid
+	(
+	{
+	url: 'RewardPunishDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: 'ID', name : 'no', width : 30, sortable : true, align: 'left'},
+	{display: '类别', name : '类别', width : 40, sortable : true, align: 'left'},
+	{display: '内容', name : '内容', width : 180, sortable : true, align: 'left'},
+	{display: '参考奖惩', name : '参考奖惩', width : 100, sortable : true, align: 'left'},
+	{display: '直接主管', name : '直接主管', width : 80, sortable : true, align: 'left'},
+	{display: '一级主管', name : '一级主管', width : 80, sortable : true, align: 'left'},
+	{display: '二级主管', name : '二级主管', width : 40, sortable : true, align: 'left'},
+	{display: '项目', name : '项目', width : 80, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '类别', name : '类别', isdefault: true},
+		{display: '内容', name : '内容'},
+		{display: '项目', name : '项目'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "no",
+	sortorder: "desc",
+	singleSelect: true,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '奖惩基本资料',
+	showTableToggleBtn: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#no').val($(rowData).data("no"));
+		$('#n1').val($(rowData).data("类别"));
+		$('#n2').val($(rowData).data("内容"));
+		$('#n3').val($(rowData).data("参考奖惩"));
+		$('#n4').val($(rowData).data("直接主管"));
+		$('#n5').val($(rowData).data("一级主管"));
+		$('#n6').val($(rowData).data("二级主管"));
+		$('#n7').val($(rowData).data("项目"));
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要删除单号为：' + SNum + ' 的记录?')){
+				  $.post('RewardPunishDetails.asp?showType=DataProcess&detailType=Delete',{"no":SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#detailType').val('AddNew');
+				$("#addDiv").show("slow");
+			}			
+	}
+
+function closead1(){
+  $("#addDiv").hide("slow");
+}
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("RewardPunishDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1){alert(data);$("#"+obj).val('');}
+		 else{
+		   if(obj=="no"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+				   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+				   if(datajson.fieldValue[0][fieldone.id]){
+					 $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+//					 if(fieldone.id=='MainDepart')select();
+				   }
+				 }
+			   });
+//				 select();
+		   }   
+		 }
+	   });
+}
+function toSubmit(){
+  $.post('RewardPunishDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+    if(data.indexOf("###")==-1) alert(data);
+	else $("#flex1").flexReload();
+  });
+  $("#addDiv").hide("slow");
+}
+
+
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm">
+<table width="100%" border="0" cellpadding="3" cellspacing="1">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>奖惩基本资料</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id=editNews>
+      <tr>
+        <td height="20" align="left" width="10%">ID号：</td>
+        <td WIDTH="15%">
+		<input name="no" type="text" class="textfield" id="no" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">类别：</td>
+        <td  WIDTH="15%">
+		<select name="n1" id="n1" >
+    <option value="奖点">奖点</option>
+    <option value="惩点">惩点</option>
+		</select>
+				</td>
+        <td height="20" align="left" width="10%">项目：</td>
+        <td  WIDTH="15%">
+		<select name="n7" id="n7" >
+    <option value="品德行为规定">品德行为规定</option>
+    <option value="生产规定">生产规定</option>
+    <option value="上下级规定">上下级规定</option>
+    <option value="上下班规定">上下班规定</option>
+    <option value="公司财产规定">公司财产规定</option>
+    <option value="餐厅规定">餐厅规定</option>
+    <option value="宿舍规定">宿舍规定</option>
+    <option value="上课开会规定">上课开会规定</option>
+    <option value="守卫规定">守卫规定</option>
+    <option value="通讯规定">通讯规定</option>
+		</select>
+				</td>
+      </tr>
+      <tr >
+        <td colspan="6"><fieldset><legend>内容：</legend>
+	  <textarea name="n2" id="n2" style="width:90%; height:80px; font-size:12px;"></textarea></fieldset>
+	  </td>
+      </tr>
+      <tr >
+      <tr>
+        <td height="20" align="left">参考奖惩：</td>
+        <td ><input name="n3" type="text" class="textfield" id="n3" value="" maxlength="100" >
+				</td>
+        <td height="20" align="left">直接主管：</td>
+        <td ><input name="n4" type="text" class="textfield" id="n4" value="" maxlength="100" ></td>
+        <td height="20" align="left">一级主管：</td>
+        <td ><input name="n5" type="text" class="textfield" id="n5" value="" maxlength="100" ></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">二级主管：</td>
+        <td ><input name="n6" type="text" class="textfield" id="n6" value="" maxlength="100" >
+				</td>
+        <td colspan="4"></td>
+      </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" colspan="6" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input name="submitSaveAdd" type="button" class="button"  value="保存" style="WIDTH: 80;"  onClick="toSubmit(this)">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="closead1()">&nbsp;
+	  </td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+</div>
+</BODY>
+</HTML>

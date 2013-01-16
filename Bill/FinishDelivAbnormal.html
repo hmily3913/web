@@ -1,0 +1,519 @@
+<HTML xmlns="http://www.w3.org/1999/xhtml">
+<HEAD>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<META NAME="copyright" CONTENT="Copyright 2011-2012" />
+<META NAME="Author" CONTENT="报表系统" />
+<META NAME="Keywords" CONTENT="" />
+<META NAME="Description" CONTENT="" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Script/resources/css/ext-all.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/ext-all.js"></script>
+<script language="javascript">
+
+Ext.require([
+    'Ext.grid.*',
+    'Ext.data.*',
+    'Ext.panel.*',
+    'Ext.layout.container.Border'
+]);
+
+Ext.onReady(function(){
+    Ext.define('SeOutId',{
+        extend: 'Ext.data.Model',
+        fields: [
+			'OrderID',
+			'ProductId',
+			'ProductName',
+			'Model',
+			'Unit',
+			{name:'Quantity',type: 'float'},
+			'SendDate',
+			'OutDate'
+//			{name:'SendDate',type: 'date',dateFormat: 'Y-n-j'},
+//			{name:'OutDate',type: 'date',dateFormat: 'Y-n-j H-i-s'}
+        ]
+    });
+
+    // create the Data Store
+    var SEstore = Ext.create('Ext.data.Store', {
+        model: 'SeOutId',
+		autoLoad: false,
+        proxy: {
+            type: 'ajax',
+            url: 'FinishDelivAbnormalDetails.asp?showType=getInfo&detailType=OrderID',
+            reader: {
+                type: 'json',
+                root: 'data',
+                totalProperty: 'idcount'
+            }
+        }
+    });
+
+    Ext.define('Book',{
+        extend: 'Ext.data.Model',
+        fields: [
+            {name:'SerialNum',type: 'int'},
+			{name:'RegDate',type: 'date',dateFormat: 'Y-n-j'},
+			'Register',
+            'RegisterName',
+            'Departmentname',
+			'Department',
+			'SEOutID',
+			'OrderID',
+			'ProductId',
+			'ProductName',
+			'Model',
+			'Unit',
+			{name:'Quantity',type: 'float'},
+			'SendDate',
+			'OutDate',
+			'AbnormalNote',
+			'Replyer',
+			'ReplyDate',
+			'ReplyText',
+			'CheckFlag'
+        ]
+    });
+	
+    // create the Data Store
+	var itemsPerPage = 20;
+    var store = Ext.create('Ext.data.Store', {
+        model: 'Book',
+		pageSize: itemsPerPage,
+		autoLoad: false,
+        proxy: {
+            type: 'ajax',
+            url: 'FinishDelivAbnormalDetails.asp?showType=DetailsList',
+            reader: {
+                type: 'json',
+                root: 'data',
+                totalProperty: 'idcount'
+            }
+        }
+    });
+    function change(val,metaData,rec) {
+		var recval=rec.get('CheckFlag');       
+		if (recval > 0) {
+            return '<span style="color:ff99ff;">' + val + '</span>';
+        }
+        return val;
+    }
+	//
+	    var formPanel = Ext.create('Ext.form.Panel', {
+        frame: true,
+        width:'100%',
+        bodyPadding: 5,
+
+        fieldDefaults: {
+            labelAlign: 'left',
+            labelWidth: 90,
+            anchor: '100%'
+        },
+
+        items: [{
+			layout:'column',
+            border:false,
+			items:[{
+                columnWidth:.3,
+                border:false,
+                layout: 'anchor',
+                defaultType: 'textfield',
+                items: [{
+					readOnly:true,
+					name: 'SerialNum',
+					fieldLabel: '单据号'
+				}, {
+					xtype: 'datefield',
+					name: 'RegDate',
+					format: 'Y-m-d',
+					allowBlank: false,
+					fieldLabel: '反馈日期',
+					value: new Date()
+				}, {
+					name: 'SEOutID',
+					allowBlank: false,
+					xtype: 'textfield',
+					fieldLabel: '通知单号',
+					listeners: {
+					  blur:function(o) {
+					    SEstore.load({
+						   params:{
+							   InfoID:o.getValue()
+						   }
+						});
+                      }
+					}
+				}, {
+					readOnly:true,
+					name: 'Model',
+					fieldLabel: '规格'
+				}, {
+					readOnly:true,
+					name: 'OrderID',
+					fieldLabel: '定单号'
+				}]
+			},{
+                columnWidth:.3,
+                border:false,
+                layout: 'anchor',
+                defaultType: 'textfield',
+                items: [{
+					allowBlank: false,
+					name: 'Register',
+					fieldLabel: '反馈人工号',
+					listeners: {
+					  blur:function(o) {
+						Ext.Ajax.request({
+							url: 'FinishDelivAbnormalDetails.asp?showType=getInfo&detailType=Register&InfoID='+o.getValue(),
+							success: function(r) {
+								formPanel.getForm().findField('Register').setValue(r.responseText.split('###')[0]);
+								formPanel.getForm().findField('RegisterName').setValue(r.responseText.split('###')[1]);
+								formPanel.getForm().findField('Department').setValue(r.responseText.split('###')[2]);
+								formPanel.getForm().findField('Departmentname').setValue(r.responseText.split('###')[3]);
+							}
+						})
+                      }
+					}
+				}, {
+					readOnly:true,
+					name: 'Department',
+					fieldLabel: '部门编号'
+				}, {
+					readOnly:true,
+					allowBlank: false,
+					name: 'ProductName',
+					fieldLabel: '产品名称'
+				}, {
+					readOnly:true,
+					name: 'Unit',
+					fieldLabel: '单位'
+				}, {
+					readOnly:true,
+//					xtype: 'datefield',
+//					format: 'Y-m-d',
+					name: 'SendDate',
+					fieldLabel: '送货日期'
+				}]
+			},{
+                columnWidth:.3,
+                border:false,
+                layout: 'anchor',
+                defaultType: 'textfield',
+                items: [{
+					readOnly:true,
+					name: 'RegisterName',
+					fieldLabel: '反馈人姓名'
+				}, {
+					readOnly:true,
+					name: 'Departmentname',
+					fieldLabel: '部门名称'
+				}, {
+					readOnly:true,
+					name: 'ProductId',
+					fieldLabel: '产品编号'
+				}, {
+					readOnly:true,
+					xtype: 'numberfield',
+					name: 'Quantity',
+					fieldLabel: '数量'
+				}, {
+					readOnly:true,
+//					xtype: 'datefield',
+//					format: 'Y-m-d',
+					name: 'OutDate',
+					fieldLabel: '出库日期'
+				}]
+			}]
+		},{
+			layout:'anchor',
+            border:false,
+			items:[{
+				allowBlank: false,
+				xtype: 'textareafield',
+				name: 'AbnormalNote',
+				fieldLabel: '反馈说明'
+			},{
+				xtype: 'textareafield',
+				name: 'ReplyText',
+				fieldLabel: '异常回复'
+			},{
+				xtype: 'hiddenfield',
+				name: 'CheckFlag'
+			}]
+		},{
+			layout:'column',
+            border:false,
+			items:[{
+                columnWidth:.5,
+                border:false,
+                layout: 'anchor',
+                defaultType: 'textfield',
+				items:[{
+					readOnly:true,
+					name: 'Replyer',
+					fieldLabel: '回复人'
+				}]
+			},{
+                columnWidth:.5,
+                border:false,
+                layout: 'anchor',
+                defaultType: 'textfield',
+				items:[{
+					readOnly:true,
+					name: 'ReplyDate',
+					fieldLabel: '回复日期'
+				}]
+			}]
+		},{
+			layout:'anchor',
+			xtype: 'gridpanel',
+			store: SEstore,
+//			height: 200,
+//			title:'发货通知单',
+            listeners: {
+                selectionchange: function(model, records) {
+                    if (records[0]) {
+					  if(formPanel.getForm().findField('CheckFlag').getValue()<1)
+                        formPanel.getForm().loadRecord(records[0]);
+                    }
+                }
+            },
+			columns: [{
+				text   : '订单号',
+				flex: 1,
+				sortable : true,
+				dataIndex: 'OrderID'
+			},{
+				text   : '产品名称',
+				width    : 120,
+				sortable : true,
+				dataIndex: 'ProductName'
+			},{
+				text   : '产品编号',
+				width    : 75,
+				sortable : true,
+				dataIndex: 'ProductId'
+			},{
+				text   : '规格',
+				width    : 75,
+				sortable : true,
+				dataIndex: 'Model'
+			},{
+				text   : '数量',
+				width    : 60,
+				sortable : true,
+				dataIndex: 'Quantity'
+			},{
+				text: '送货日期',
+				width: 70,
+				sortable: true,
+//				renderer : Ext.util.Format.dateRenderer('Y-m-d'),
+				dataIndex: 'SendDate'
+			},{
+				text: '出库日期',
+				width: 70,
+				sortable: true,
+//				renderer : Ext.util.Format.dateRenderer('Y-m-d'),
+				dataIndex: 'OutDate'
+			}]
+		}],
+		buttons: [{
+			text: '取消',
+			handler: function() {
+				this.up('window').hide();
+			}
+		}, {
+			text: '反馈',
+			handler: function() {
+				if (formPanel.getForm().isValid()) {
+					// In a real application, this would submit the form to the configured url
+					this.up('window').hide();
+					var detailFlag=formPanel.getForm().findField('SerialNum').getValue()==''?'AddNew':'Edit';
+					
+					formPanel.getForm().submit({
+						url: 'FinishDelivAbnormalDetails.asp',
+						params: {
+							showType: 'DataProcess',
+							detailType:detailFlag
+						},
+						success: function(form, action) {
+						   Ext.Msg.alert('成功', action.result.MSG);
+						   store.load({
+							   params:{
+								   start:0,    
+								   limit: itemsPerPage
+							   }
+						   });
+						},
+						failure: function(form, action) {
+						   Ext.Msg.alert('失败', action.result.MSG);
+						},
+						submitEmptyText: false,
+						waitMsg: '数据保存中...'
+					});
+				}
+			}
+		}, {
+			text: '回复',
+			handler: function() {
+				if (formPanel.getForm().findField('SerialNum').getValue()!='') {
+					// In a real application, this would submit the form to the configured url
+					this.up('window').hide();
+					formPanel.getForm().submit({
+						url: 'FinishDelivAbnormalDetails.asp',
+						params: {
+							showType: 'DataProcess',
+							detailType:'Check'
+						},
+						success: function(form, action) {
+						   Ext.Msg.alert('成功', action.result.MSG);
+						   store.load({
+							   params:{
+								   start:0,    
+								   limit: itemsPerPage
+							   }
+						   });
+						},
+						failure: function(form, action) {
+						   Ext.Msg.alert('失败', action.result.MSG);
+						},
+						submitEmptyText: false,
+						waitMsg: '数据保存中...'
+					});
+				}
+			}
+		}]
+    });
+
+	//添加窗口
+    var helpWindow = Ext.create('Ext.Window', {
+        title: '增加编辑窗口',
+        width: 700,
+        height: 450,
+        closeAction: 'hide',
+        layout: 'fit',
+        items: [formPanel]
+    });
+
+    // create the grid
+    var grid = Ext.create('Ext.grid.Panel', {
+        store: store,
+        columns: [
+            {text: "反馈单号", width: 60, dataIndex: 'SerialNum', sortable: true,renderer : change},
+            {text: "反馈日期", width: 60, dataIndex: 'RegDate', sortable: true,renderer : Ext.util.Format.dateRenderer('Y-m-d')},
+            {text: "反馈人", width: 50, dataIndex: 'RegisterName', sortable: true,renderer : change},
+            {text: "反馈部门", width: 60, dataIndex: 'Departmentname', sortable: true,renderer : change},
+            {text: "发货通知单", width: 60, dataIndex: 'SEOutID', sortable: true,renderer : change},
+            {text: "订单号", width: 60, dataIndex: 'OrderID', sortable: true,renderer : change},
+            {text: "产品编号", width: 60, dataIndex: 'ProductId', sortable: true,renderer : change},
+            {text: "产品名称", width: 120, dataIndex: 'ProductName', sortable: true,renderer : change},
+            {text: "规格",  width: 100, dataIndex: 'Model', sortable: true,renderer : change},
+            {text: "单位", width: 60, dataIndex: 'Unit', sortable: true,renderer : change},
+            {text: "数量", width: 60, dataIndex: 'Quantity', sortable: true,renderer : change},
+            {text: "送货日期", width: 60, dataIndex: 'SendDate', sortable: true,renderer : change},
+            {text: "出库日期", width: 60, dataIndex: 'OutDate', sortable: true,renderer : change},
+            {text: "异常描述", width: 100, dataIndex: 'AbnormalNote', sortable: true,renderer : change},
+            {text: "改善回复", flex: 1,width: 100, dataIndex: 'ReplyText', sortable: true,renderer : change}
+        ],
+        viewConfig: {
+            forceFit: true
+        },
+        renderTo: 'grid-example',
+        frame: true,
+		constrainHeader:true,
+        title: '订单异常反馈处理进度汇总',
+        width:'100%',
+        height:'100%',
+        split: true,
+		tbar:[{
+			text:'添加',
+			handler: function() {
+                Ext.Ajax.request({
+                    url: 'FinishDelivAbnormalDetails.asp?showType=getInfo&detailType=Register&InfoID=A09528',
+                    success: function(r) {
+						formPanel.getForm().findField('Register').setValue(r.responseText.split('###')[0]);
+						formPanel.getForm().findField('RegisterName').setValue(r.responseText.split('###')[1]);
+						formPanel.getForm().findField('Department').setValue(r.responseText.split('###')[2]);
+						formPanel.getForm().findField('Departmentname').setValue(r.responseText.split('###')[3]);
+						helpWindow.show();
+                    }
+                });
+			}
+		}, '-', {
+			text:'维护',
+			tooltip:'编辑查看',
+			handler: function() {
+				var selection = grid.getView().getSelectionModel().getSelection()[0];
+				formPanel.getForm().loadRecord(selection);
+				helpWindow.show();
+			}
+		},'-',{
+			text:'删除',
+			handler: function() {
+				var selection = grid.getView().getSelectionModel().getSelection()[0];
+				if (selection) {
+					Ext.Ajax.request({
+						url: 'FinishDelivAbnormalDetails.asp?showType=DataProcess&detailType=Delete&SerialNum='+selection.get('SerialNum'),
+						success: function(r) {
+							store.remove(selection);
+							Ext.Msg.alert('提示', r.responseText);
+						}
+					});
+				}
+			}
+		},'-',{
+			 xtype: 'textfield',
+			 id: 'seachfield',
+			 fieldLabel: '周别',
+			 labelWidth:40,
+			 width: 80
+		},{
+			text:'查询',
+			cls:'x-btn-over',
+			handler: function() {
+			   store.load({
+				   params:{
+				   	   seachword:Ext.getCmp('seachfield').getValue(),
+					   start:0,    
+					   limit: itemsPerPage
+				   }
+			   });
+			}
+		}],
+        layout: 'fit',
+        resizable: {
+            handles: 's'  
+        },
+       dockedItems: [{
+           xtype: 'pagingtoolbar',
+           store: store,   
+           dock: 'bottom',
+           displayInfo: true
+       }],
+		listeners: {
+			itemdblclick: function(views, records,items,indexs) {
+				if (records) {
+					formPanel.getForm().loadRecord(records);
+					helpWindow.show();
+				}
+			}
+		}
+    });
+        
+   store.load({
+       params:{
+           start:0,    
+           limit: itemsPerPage
+       }
+   });
+});
+
+</script>
+</HEAD>
+<BODY>
+<div id="grid-example"></div>
+
+</BODY>
+</HTML>

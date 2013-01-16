@@ -1,0 +1,738 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<link rel="stylesheet" href="../Images/zTreeStyle.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<script language="javascript" src="../Script/jquery.setTime.js"></script>
+<script language="javascript" src="../Script/jquery.ztree-2.6.min.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+.fydis{
+	display:none
+}
+/* ------------- 右键菜单 -----------------  */
+
+div#rMenu {
+	background-color:#555555;
+	text-align: left;
+	padding:2px;
+}
+
+div#rMenu ul {
+	margin:1px 0;
+	padding:0 5px;
+	cursor: pointer;
+	list-style: none outside none;
+	background-color:#DFDFDF;
+}
+div#rMenu ul li {
+	margin:0;
+	padding:2px 0;
+}
+</style>
+
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+	
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$.get("OvertimeDetails.asp", { showType: "CheckPermiss"},function(data){
+		if(data=='True')$('.fydis').show();
+		else $('.fydis').hide();
+	});
+		rMenu = document.getElementById("rMenu");
+		$("#AddDetailDiv").bind("mousedown", 
+			function(event){
+				if (!(event.target.id == "rMenu" || $(event.target).parents("#rMenu").length>0)) {
+					rMenu.style.visibility = "hidden";
+				}
+			});
+//	$("#AddForm").validate({
+//		submitHandler:function(form){
+//		}
+//	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'OvertimeDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: 'ID', name : 'SerialNum', width : 60, sortable : true, align: 'left'},
+	{display: '工号', name : 'Register', width : 50, sortable : true, align: 'left'},
+	{display: '姓名', name : 'RegisterName', width : 50, sortable : false, align: 'left'},
+	{display: '日期', name : 'RegDate', width : 60, sortable : true, align: 'left'},
+	{display: '部门', name : 'Departmentname', width : 50, sortable : true, align: 'left'},
+	{display: '合计时间', name : 'TotalHour', width : 40, sortable : true, align: 'left'},
+	{display: '加班类型', name : 'OverType', width : 80, sortable : true, align: 'left'},
+	{display: '加班原因', name : 'OverReason', width : 100, sortable : true, align: 'left'},
+	{display: '责任部门', name : 'ResponseDepart', width : 50, sortable : true, align: 'left'},
+	{display: '加班人数', name : 'OversNum', width : 50, sortable : true, align: 'left'},
+	{display: '就餐人数', name : 'JCAll', width : 50, sortable : true, align: 'left'},
+	{display: '审核', name : 'CheckFlag', width : 50, sortable : true, align: 'left'},
+	{display: '作废', name : 'CancelFlag', width : 50, sortable : true, align: 'left'},
+	{display: '登记人', name : 'Biller', width : 50, sortable : true, align: 'left'},
+	{display: '登记日期', name : 'BillDate', width : 50, sortable : true, align: 'left'},
+	{display: '审核人', name : 'Checker', width : 50, sortable : true, align: 'left'},
+	{display: '相关审核人', name : 'Relater', width : 50, sortable : true, align: 'left'},
+	{display: '副总审核人', name : 'VPReplyer', width : 50, sortable : true, align: 'left'},
+	{display: '执行人', name : 'Hrer', width : 50, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '审核',  onpress : test},
+		{separator: true},
+		{name: '反审核',  onpress : test},
+		{separator: true},
+		{name: '计算工资',  onpress : test},
+		{separator: true},
+		{name: '复制',  onpress : test},
+		{separator: true},
+		{name: '查汇总',  onpress : test},
+		{separator: true},
+		{name: '单笔导出',  onpress : test},
+		{separator: true},
+		{name: '就餐查询',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '单号', name : 'a.SerialNum', isdefault: true},
+		{display: '申请人工号', name : 'a.Register'},
+		{display: '申请人姓名', name : 'a.RegisterName'},
+		{display: '申请部门', name : 'a.Departmentname'},
+		{display: '加班人工号', name : 'b.Overer'},
+		{display: '加班人姓名', name : 'b.OvererName'},
+		{display: '作废', name : 'a.CancelFlag'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: false,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '加班申请单',
+	showTableToggleBtn: true,
+	showcheckbox: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#TbDetails tr:gt(1)').remove();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		getInfo('SerialNum');
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('OvertimeDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":AllSNum},function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#TbDetails tr:gt(1)').remove();
+				$('#detailType').val('AddNew');
+				var yestoday=showdate(0);
+				$('#RegDate').val(yestoday);
+				$("#addDiv").show("slow");
+				$("#addDiv").css("z-index","500");
+			}			
+		else if (com=='审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				
+				var txt='';
+				$.prompt(txt,{
+					buttons: { 同意: '0', 不同意: '1' },
+					submit:function(v,m,f){ 
+							$.post('OvertimeDetails.asp',{
+								showType:'DataProcess',
+								detailType:'Check',
+								SerialNum:AllSNum,
+								operattext:v
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+							return false; 
+					 }
+				 });
+			}			
+		else if (com=='计算工资')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				
+				var txt='';
+				$.prompt(txt,{
+					buttons: { 计算: '0'},
+					submit:function(v,m,f){ 
+							$.post('OvertimeDetails.asp',{
+								showType:'DataProcess',
+								detailType:'Count',
+								SerialNum:AllSNum,
+								operattext:v
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+							return false; 
+					 }
+				 });
+			}			
+		else if (com=='查汇总')
+			{
+				
+				var txt='请选择年份：<select id="FYear" name="FYear"><option value="2011">2011</option><option value="2012">2012</option><option value="2013">2013</option></select><br/><br/>请选择月份:';
+				txt+='<select id="Month" name="Month">';
+				txt+='<option value="1">01</option>';
+				txt+='<option value="2">02</option>';
+				txt+='<option value="3">03</option>';
+				txt+='<option value="4">04</option>';
+				txt+='<option value="5">05</option>';
+				txt+='<option value="6">06</option>';
+				txt+='<option value="7">07</option>';
+				txt+='<option value="8">08</option>';
+				txt+='<option value="9">09</option>';
+				txt+='<option value="10">10</option>';
+				txt+='<option value="11">11</option>';
+				txt+='<option value="12">12</option>';
+				txt+='</select><br/><br/>';
+				txt+='请选择人员类型:<select id="PesonType" name="PesonType">';
+				txt+='<option value="1.行政月薪">1.行政月薪</option>';
+				txt+='<option value="2.分厂月薪">2.分厂月薪</option>';
+				txt+='<option value="3.计件">3.计件</option>';
+				txt+='</select><br/><br/>';
+				$.prompt(txt,{
+					buttons: { 查看: '0',导出: '1'},
+					submit:function(v,m,f){ 
+						if(v==0){
+							$('#listDiv').load("OvertimeDetails.asp #listtable",{
+								showType:'Excel',
+								Year:f.FYear,
+								Month:f.Month,
+								PesonType:f.PesonType
+							 },function(response, status, xhr){
+								if (status =="success") {
+									$('#QueryTable').hide();
+									$.prompt.close();
+									$("#listDiv").show("slow");
+								}	
+							});
+						}
+						if(v==1){
+							window.open("OvertimeDetails.asp?showType=Excel&print_tag=1&Year="+f.FYear+"&Month="+f.Month+"&PesonType="+f.PesonType,"Print","","false");
+							$.prompt.close();
+						}
+							return false; 
+					 }
+				 });
+			}			
+		else if (com=='反审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要通知单号为：' + AllSNum + ' 的记录?')){
+				  $.post('OvertimeDetails.asp?showType=DataProcess&detailType=unCheck',{"SerialNum":AllSNum},function(data){
+							alert(data);
+							if(data.indexOf('成功')>0)$("#flex1").flexReload();
+				  });
+				}
+			}			
+		else if (com=='复制')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				$('#AddForm').resetForm();
+				$('#SerialNum').val($('.trSelected:last', grid).attr("id").replace("row",""));
+				getInfo('SerialNum');
+				$("#addDiv").show("slow");
+				$('#detailType').val('AddNew');
+			}			
+		else if (com=='单笔导出')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				window.open("OvertimeDetails.asp?print_tag=1&showType=OutPutOne&InfoID="+$('.trSelected:last', grid).attr("id").replace("row",""),"Print","","false");
+
+			}			
+		else if (com=='就餐查询')
+			{
+				var txt='';
+				txt+='加班日期：从<input name="SDate" type="text" class="textfield" id="SDate" style="width:30%;" value="" maxlength="100"  onfocus="$(this).datepick()">到<input name="EDate" type="text" class="textfield" id="EDate" style="width:30%" value="" maxlength="100"  onfocus="$(this).datepick()"><br/><br/>';
+				$.prompt(txt,{
+					buttons: { web查看: 'WebLook', 导出EXCEL: 'OutPut' },
+					submit:function(v,m,f){ 
+/*						if(v=='webLook'){
+							$.post('OvertimeDetails.asp',{
+								showType:'JCOutPut',
+								SDate:f.SDate,
+								EDate:f.EDate
+							 },function(data){
+								$.prompt.close();
+							});
+						}*/
+						if(v=='OutPut'){
+							window.open("OvertimeDetails.asp?showType=JCOutPut&print_tag=1&SDate="+f.SDate+"&EDate="+f.EDate,"Print","","false");
+							$.prompt.close();
+						}
+						return false; 
+					 }
+				 });
+			}			
+	}
+	
+function showResponse(responseText, statusText)  {
+	var datajson=jQuery.parseJSON(responseText);
+	if(datajson.err==''){
+		$.get("OvertimeDetails.asp", { showType: "xls2sql",InfoID: datajson.msg.url },function(data){
+			alert(data);
+			$("#flex1").flexReload();
+		});
+	}else{
+		alert(datajson.err);
+	}
+}
+
+function closead1(){
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("OvertimeDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+					   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+					   if(datajson.fieldValue[0][fieldone.id])
+					     $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+					 }
+			   });
+				//子表信息
+				$('#TbDetails tr:gt(1)').remove();
+				for(var i=0;i<datajson.fieldValue[0]['Entrys'].length;i++){
+					$('#TbDetails').append($('#CloneNodeTr').clone().show().attr("bgColor",datajson.fieldValue[0]['Entrys'][i]["bg"]));
+					$(':input',$('#TbDetails tr:last')).each(function(n,fieldone){
+						if(datajson.fieldValue[0]['Entrys'][i][fieldone.name])
+							fieldone.value=datajson.fieldValue[0]['Entrys'][i][fieldone.name]
+					});
+				}
+		   }
+		   else if(obj=="Register"){
+		   $("#Register").val(data.split('###')[0]);
+		   $("#RegisterName").val(data.split('###')[1]);
+		   $("#Department").val(data.split('###')[2]);
+		   $("#Departmentname").val(data.split('###')[3]);
+//		   $("#Position").val(data.split('###')[5]);
+		   }
+		 }
+	   });
+}
+function getEmp(obj){
+  if($(obj).val()=='')return false;
+	$.get("OvertimeDetails.asp", { showType: "getInfo",detailType: 'Register', InfoID: $(obj).val()},
+		function(data){
+			if(data.indexOf("###")==-1){
+				alert(data);
+				$(obj).val('');
+			}
+			else{
+				$('input[name=Overer]',obj.parentNode.parentNode).val(data.split('###')[0]);
+				$('input[name=OvererName]',obj.parentNode.parentNode).val(data.split('###')[1]);
+				$('input[name=OverDepartment]',obj.parentNode.parentNode).val(data.split('###')[2]);
+				$('input[name=OverDepartmentname]',obj.parentNode.parentNode).val(data.split('###')[3]);
+				$('input[name=Position]',obj.parentNode.parentNode).val(data.split('###')[5]);
+				$('input[name=Grade]',obj.parentNode.parentNode).val(data.split('###')[7]);
+				$('input[name=FYPrice]',obj.parentNode.parentNode).val(data.split('###')[8]);
+				if($(':input[value='+data.split('###')[0]+']',$('#editDetails')).length>1){
+					alert('此单据中已经存在该员工,不允许重复录入！');
+					$(obj).parent().parent().remove();
+				}
+				if($(':input[name=Overer][value=""]',$(obj).parent().parent().parent()).length==1){
+					$(obj).parent().parent().parent().append($('tr:eq(1)',$(obj).parent().parent().parent()).clone().show());
+					$(':input[name=Overer]',$('#TbDetails tr:last')).focus();
+				}
+			}
+		});
+}
+function nextInput(evt,obj){
+	if(evt.keyCode==13){
+		getEmp(obj);
+	}
+}
+function commonInput(evt,obj){
+	if(evt.keyCode==120){
+		var lie = $(obj).parent().prevAll().length;
+		var val = obj.value;
+		$("#editDetails").find("td").each(function(i){//搜寻表格里的每一个区间
+			if(i%16 == lie){ //'4'代表表格总共有4列，如果区间编号被4整除，那么它就属于第一列
+			$('input',this).val(obj.value);}//给区间加上特定样式
+		});
+	}
+}
+
+var zTree1;
+var setting;
+var rMenu;
+	setting = {
+		checkable: true,
+		checkType : {"Y":"ps", "N":"ps"},
+		expandSpeed:"",
+		keepParent: false,
+		keepLeaf: false,
+		isSimpleData : true,
+		treeNodeParentKey : "PSNum",
+		treeNodeKey : "SerialNum",
+		rootPID : 0,
+		async: true,
+		asyncUrl: "OvertimeDetails.asp",
+		asyncParam: ["SerialNum"],
+		asyncParamOther : {"showType":"getInfo","detailType":"Users"},
+		callback: {
+//			beforeExpand: zTreeBeforeExpand,
+			rightClick: zTreeOnRightClick
+		}
+	};
+	function zTreeBeforeExpand(treeId, treeNode) {
+		zTree1.expandAll(false);
+	}
+	function searchTreeNode(evt) {
+		hideRMenu();
+		$('#SearchID').val('');
+		$("#editOne").show();
+		$("#editOne").css({"top":evt.clientY+"px", "left":evt.clientX+"px", "visibility":"visible"});
+	}
+	function submitSearch(){
+		if($('#SearchID').val()!=''){
+			var treeNode = zTree1.getNodeByParam("val4", $('#SearchID').val());
+			treeNode = treeNode?treeNode:zTree1.getNodeByParam("SerialNum", $('#SearchID').val());
+			if (treeNode) {
+				zTree1.selectNode(treeNode);
+			} else {
+				alert("没有找到匹配的节点，请更换搜索条件");
+			}
+		}
+	}
+	//右键菜单
+	function zTreeOnRightClick(event, treeId, treeNode) {
+		if (!treeNode && event.target.tagName.toLowerCase() != "button" && $(event.target).parents("a").length == 0) {
+			zTree1.cancelSelectedNode();
+			showRMenu("root", event.clientX, event.clientY);
+		} else if (treeNode && !treeNode.noR) {
+			zTree1.selectNode(treeNode);
+			showRMenu("node", event.clientX, event.clientY);
+		}
+	}
+	function showRMenu(type, x, y) {
+		$("#rMenu ul").show();
+		if (type=="root") {
+			$("#m_edit").hide();
+			$("#m_del").hide();
+			$("#m_check").hide();
+			$("#m_unCheck").hide();
+		}
+		$("#rMenu").css({"top":y+"px", "left":x+"px", "visibility":"visible"});
+	}
+	function hideRMenu() {
+		if (rMenu) rMenu.style.visibility = "hidden";
+	}
+	function refreshTree() {
+		hideRMenu();
+		var nodes = [];
+		setting.async = true;
+		zTree1 = $("#Users").zTree(setting, nodes);
+	}
+
+function InsertUser(){
+	var tmp = zTree1.getCheckedNodes();
+	for (var i=0; i<tmp.length; i++) {
+		if(tmp[i].val1!=''){
+			$('#TbDetails').append($('#CloneNodeTr').clone().show());
+			$('input[name=Overer]',$('#TbDetails tr:last')).val(tmp[i].SerialNum);
+			$('input[name=OvererName]',$('#TbDetails tr:last')).val(tmp[i].val4);
+			$('input[name=OverDepartment]',$('#TbDetails tr:last')).val(tmp[i].PSNum);
+			$('input[name=OverDepartmentname]',$('#TbDetails tr:last')).val(tmp[i].val1);
+			$('input[name=Position]',$('#TbDetails tr:last')).val(tmp[i].val2);
+			$('input[name=Grade]',$('#TbDetails tr:last')).val(tmp[i].val3);
+			$('input[name=FYPrice]',$('#TbDetails tr:last')).val('3.75');
+		}
+	}
+	$('#AddDetailDiv').hide();
+}
+
+function toSubmit(obj){
+	if($('#Register').val()==''){alert('申请人不能为空！');return false;}
+	if($('#RegDate').val()==''){alert('申请日期不能为空！');return false;}
+	obj.disabled = true;
+	$.post('OvertimeDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+		if(data.indexOf("成功")>-1) $("#flex1").flexReload();
+		alert(data);
+		obj.disabled = false;
+	});
+	$("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+function MycheckNum(obj){
+	if(checkNum(obj)){
+		$('input[name=ActualHour]',obj.parentNode.parentNode).val($(obj).val());
+	}
+}
+function search2(){
+	$('input[name=Overer]').each(function() {
+		$(this).parent().parent().attr("bgColor","#EBF2F9");
+		if(this.value.indexOf($('#SearchID2').val().toUpperCase())>-1){
+			$(this).focus()
+			$(this).parent().parent().attr("bgColor","#FFFF99");
+		}
+	});
+//	var searchResult=$('input[name=Overer][value='+$('#SearchID2').val()+']').focus().parent().parent().attr("bgColor","#FFFF99");
+}
+	function searchshow2(evt) {
+		$('#SearchID2').val('');
+		$("#editOne2").show();
+		$("#editOne2").css({"top":evt.clientY+"px", "left":evt.clientX+"px", "visibility":"visible"});
+	}
+function showkq(obj){
+	$.post('OvertimeDetails.asp?showType=showkq&ssn='+$('input[name=Overer]',$(obj).parent().parent()).val()+'&date='+$('input[name=StartDate]',$(obj).parent().parent()).val(),function(data){
+		alert(data);
+	});
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>加班申请单</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" nowrap bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id=editNews>
+      <tr>
+        <td height="20" align="left" width="10%">单据号：</td>
+        <td WIDTH='15%'>
+		<input name="SerialNum" type="text" class="textfield" id="SerialNum" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">申请人工号：</td>
+        <td  WIDTH='15%'><input name="Register" type="text" class="required textfield" style="width:90%" id="Register" value="" maxlength="100" onBlur="getInfo('Register')"></td>
+        <td height="20" align="left" width="10%">申请人姓名：</td>
+        <td  WIDTH='15%'><input name="RegisterName" type="text" class="textfield" id="RegisterName" value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">申请日期：</td>
+        <td><input name="RegDate" type="text" class="dateISO required textfield" id="RegDate"  value="" maxlength="100"  onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">申请部门编号：</td>
+        <td><input name="Department" type="text" class="textfield" id="Department" value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">申请部门名称：</td>
+        <td><input name="Departmentname" type="text" class="textfield" id="Departmentname"  value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">责任部门：</td>
+        <td>
+		<select id="ResponseDepart" name="ResponseDepart">
+		  <option value="" ></option>
+		  <option value="管理部" >管理部</option>
+		  <option value="一分厂" >一分厂</option>
+		  <option value="二分厂" >二分厂</option>
+		  <option value="三分厂" >三分厂</option>
+		  <option value="眼镜布绳" >眼镜布绳</option>
+		  <option value="花生盒" >花生盒</option>
+		  <option value="营销部" >营销部</option>
+		  <option value="采购部" >采购部</option>
+		  <option value="工程部" >工程部</option>
+		  <option value="生管部" >生管部</option>
+		  <option value="仓储科" >仓储科</option>
+		  <option value="品保部" >品保部</option>
+		  <option value="生技部" >生技部</option>
+		  <option value="财务部" >财务部</option>
+		  <option value="总经办" >总经办</option>
+		</select>
+        </td>
+        <td height="20" align="left">加班类型：</td>
+        <td><select id="OverType" name="OverType">
+        <option value="正常加班">正常加班</option>
+        <option value="分厂加班">分厂加班</option>
+        <option value="外协加班">外协加班</option>
+        <option value="接送客人">接送客人</option>
+        <option value="成品出货">成品出货</option>
+        <option value="收料加班">收料加班</option>
+        </select></td>
+      </tr>
+      <tr>
+        <td height="20" colspan="8">
+		<table width="100%" border="0" id="editDetails" cellpadding="0" cellspacing="1" bgcolor="#99BBE8">
+		  <tbody id="TbDetails">
+		  <tr>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>加班人工号</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>姓名</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>部门编号</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>部门名称</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>岗位</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>职等</strong></font></td>
+			<td width="7%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>开始日期</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>开始时间</strong></font></td>
+			<td width="7%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>结束日期</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>结束时间</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>总计/小时</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>实际/小时</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>是否就餐</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9" class="fydis"><font color="#FFFFFF"><strong>时薪</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9" class="fydis" ><font color="#FFFFFF"><strong>费用合计</strong></font></td>
+			<td width="7%" bgcolor="#8DB5E9"><strong><font color="#FFFFFF">操作</font></strong></td>
+		  </tr>
+		  <tr bgColor="#EBF2F9" id="CloneNodeTr" style="display:none;" >
+			<td><input type="hidden" name="SerialNumD" /><input type="text" name="Overer" class="textdetail" onblur="getEmp(this)" onkeydown="nextInput(event,this)"/></td>
+			<td><input type="text" name="OvererName" class="textdetail" readonly="readonly"/></td>
+			<td><input type="text" name="OverDepartment" class="textdetail" readonly="readonly"/></td>
+			<td><input type="text" name="OverDepartmentname" class="textdetail" readonly="readonly"/></td>
+			<td><input type="text" name="Position" class="textdetail" readonly="readonly"/></td>
+			<td><input type="text" name="Grade" class="textdetail" readonly="readonly"/></td>
+			<td><input type="text" name="StartDate" class="textdetail" onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})" onkeydown="commonInput(event,this)"/></td>
+			<td><input type="text" name="StartTime" class="textdetail" onfocus="$(this).setTime()" onkeydown="commonInput(event,this)"/></td>
+			<td><input type="text" name="EndDate" class="textdetail" onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})" onkeydown="commonInput(event,this)"/></td>
+			<td><input type="text" name="EndTime" class="textdetail" onfocus="$(this).setTime()" onkeydown="commonInput(event,this)"/></td>
+			<td><input type="text" name="TotalHour" class="number textdetail" onkeydown="commonInput(event,this)" onblur="return MycheckNum(this)"/></td>
+			<td><input type="text" name="ActualHour" class="textdetail" value="0" onblur="return checkNum(this)"/></td>
+			<td><select name="Repast" style="font-size:12px;"><option value="是">是</option><option value="否">否</option></select></td>
+			<td class="fydis"><input type="text" name="FYPrice" class="textdetail" value="0" readonly="readonly"/></td>
+			<td class="fydis"><input type="text" name="FYTotal" class="textdetail" value="0" readonly="readonly"/></td>
+			<td align="left">
+      <input type="button" onClick="$(this).parent().parent().hide();$(this).next().val(1);" style="background:no-repeat center url(../Images/delete.gif);width:18px; height:18px;padding:0px; margin:0px;" class="button"/>
+      <input type="hidden" name="DeleteFlag" id="DeleteFlag" value="0">
+      <input type="button" onClick="showkq(this)" style="background:no-repeat center url(../Images/document/images/zoom.png); width:18px; height:18px;padding:0px; margin:0px;" title="点击查看原始打卡记录"/>
+      </td>
+		  </tr>
+		  </tbody>
+		</table>
+		</td>
+      </tr>
+      <tr >
+        <td height="80" align="left">加班原因：</td>
+        <td colspan="7">
+	  <textarea name="OverReason" id="OverReason" style="width:90%; height:80px; font-size:12px;"></textarea>
+	  </td>
+      </tr>
+      <tr><td colspan="8"><HR style="margin-top:0; margin-bottom:0"/>
+</td>
+      </tr>
+	<tr bgcolor="#99BBE8">
+	  <td align="center" colspan="8" height="24">
+	  <input type="hidden" name="CheckFlag" id="CheckFlag" value="">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+    <input type="button" class="button"  value="定位" title="" style="WIDTH: 80;" onClick="searchshow2(event)">&nbsp;
+    <input type="button" class="button"  value="筛选" title="选择整个部门的人员时，请先展开部门再选入！" style="WIDTH: 80;" onClick="$('#AddDetailDiv').show();refreshTree();">&nbsp;
+    <input name="addrow" type="button" class="button"  value="增加一行" style="WIDTH: 80;" onClick="$('#TbDetails').append($('#CloneNodeTr').clone().show())">&nbsp;
+			<input name="submitSaveAdd" type="button" class="submit button"  value="保存" style="WIDTH: 80;" onclick="toSubmit(this)">&nbsp;
+			<input type="button" class="submit button"  value="执行" style="WIDTH: 80;" onclick="$('#detailType').val('Finish');toSubmit(this);">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;" onClick="javascript:closead1()">&nbsp;
+	  </td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+</div>
+<div id="AddDetailDiv" style="position:absolute;width:'70%';height:'30%';top:10%;left:10%;background:#E8EFFF;border:1px solid #99BBE8;border-width:1px 1px 1px 1px;overflow:auto;opacity:0.8;display:none;z-index:600">
+&nbsp;&nbsp;<input type="button" value="关闭" class="button" style="background-color:#09F" onclick="$('#AddDetailDiv').hide()" />&nbsp;
+<input type="button" value="选入" class="button" style="background-color:#09F" onclick="InsertUser()" />
+<ul id="Users" class="tree"></ul>
+</div>
+<div id="rMenu" style="position:absolute; visibility:hidden;z-index:700;">
+<li>
+<ul id="m_add" onclick="searchTreeNode(event);"><li>查找</li></ul>
+<ul id="m_reset" onclick="refreshTree();"><li>重新载入</li></ul>
+</li>
+</div>
+<div id="editOne" style="position:absolute; visibility:hidden;z-index:700;">
+<table width="auto" style="margin:0;text-align: left; padding:0; background-color:#EBF2F9; border:0; color:#FFFFFF;">
+<tr>
+<td>姓名或工号</td><td><input type="text" id="SearchID" name="SearchID" /></td>
+</tr>
+<tr>
+<td colspan="2">
+<input type="button" value="确定" style="width:60px; height:16px; font-size:12px " onclick="submitSearch()"/>
+<input type="button" value="关闭" style="width:60px; height:16px; font-size:12px " onclick="$('#editOne').hide()"/></td>
+</tr>
+</table>
+</div>
+<div id="listDiv" style="width:100%;top:0;left:20;display:none;background-color:#ffffff;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-x:hidden; overflow-y:scroll; z-index:550">
+</div>
+<div id="editOne2" style="position:absolute; visibility:hidden;z-index:800;">
+<table width="auto" style="margin:0;text-align: left; padding:0; background-color:#EBF2F9; border:0; color:#FFFFFF; background-color:#FF9">
+<tr>
+<td>工号</td><td><input type="text" id="SearchID2" name="SearchID2" /></td>
+</tr>
+<tr>
+<td colspan="2">
+<input type="button" value="确定" style="width:60px; height:16px; font-size:12px " onclick="search2()"/>
+<input type="button" value="关闭" style="width:60px; height:16px; font-size:12px " onclick="$('#editOne2').hide()"/></td>
+</tr>
+</table>
+</div>
+
+</BODY>
+</HTML>

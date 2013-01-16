@@ -1,0 +1,357 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$("input[name^='p']").blur(function(){
+		$("input[name^='p']").each(function(i,fieldone){
+			if(fieldone.value=='')fieldone.value=0;
+			});
+		var pallnum=parseFloat($('#p1').val())+parseFloat($('#p2').val())+parseFloat($('#p3').val())+parseFloat($('#p4').val())+parseFloat($('#p5').val())+parseFloat($('#p6').val())+parseFloat($('#p7').val())+parseFloat($('#p8').val())+parseFloat($('#p9').val())+parseFloat($('#p10').val())+parseFloat($('#p11').val())+parseFloat($('#p12').val())+parseFloat($('#p13').val())+parseFloat($('#p14').val())+parseFloat($('#p15').val())+parseFloat($('#p16').val());
+		$('#pall').val(pallnum);
+	});
+	$("#AddForm").validate({
+		submitHandler:function(form){
+			$("input:submit").each(function() {this.disabled = true;});
+			$.post('SupplierEvaluatDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+				if(data.indexOf("###")==-1) alert(data);
+				else $("#flex1").flexReload();
+				$("input:submit").each(function() {this.disabled = false;});
+			});
+			$("#addDiv").hide("slow");
+			$("#addDiv").css("z-index","500");
+		}
+	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'SupplierEvaluatDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '单号', name : 'SerialNum', width : 30, sortable : true, align: 'left'},
+	{display: '供方名称', name : 'RegDate', width : 80, sortable : true, align: 'left'},
+	{display: '评估日期', name : 'Period', width : 60, sortable : true, align: 'left'},
+	{display: '电话', name : 'RegisterID', width : 60, sortable : true, align: 'left'},
+	{display: '制单人', name : 'Register', width : 60, sortable : true, align: 'left'},
+	{display: '制单日期', name : 'Department', width : 40, sortable : true, align: 'left'},
+	{display: '得分', name : 'Departmentname', width : 40, sortable : true, align: 'left'},
+	{display: '工程', name : 'Reason', width : 50, sortable : true, align: 'left'},
+	{display: '品保', name : 'CheckFlag', width : 50, sortable : true, align: 'left'},
+	{display: '采购', name : 'Remark', width : 50, sortable : true, align: 'left'},
+	{display: '审核', name : 'Checker', width : 50, sortable : true, align: 'left'},
+	{display: '审核意见', name : 'CheckOpion', width : 200, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '供方名称', name : 'Supplier', isdefault: true}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: true,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '供应商评估表',
+	showTableToggleBtn: true,
+	showcheckbox: false,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		getInfo('SerialNum');
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('SupplierEvaluatDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":AllSNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#detailType').val('AddNew');
+				var yestoday=showdate(0);
+				$('#Evaluatdate').val(yestoday);
+				$("#addDiv").show("slow");
+			}			
+	}
+
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("SupplierEvaluatDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+					   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+					   if(datajson.fieldValue[0][fieldone.id])
+					     $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+					 }
+			   });
+		   }
+		 }
+	   });
+}
+function changeremark(){
+	if($('#Reason').val()=='忘打卡'){
+		$('#cremark').hide();
+	}else
+		$('#cremark').show();
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm" style="margin:0; padding:0 ">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="$('#addDiv').hide('slow').css('z-index','500');" >&nbsp;<strong>供应商评估表</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id=editNews>
+      <tr>
+        <td height="20" align="left" width="10%">供方名称：</td>
+        <td  WIDTH='15%'><input name="SerialNum" type="hidden" id="SerialNum">
+        <input name="Supplier" type="text" class="required textfield" id="Supplier" value="" maxlength="100"></td>
+        <td height="20" align="left" width="10%">新旧类型：</td>
+        <td  WIDTH='15%'>
+        <select id="OldOrNew" name="OldOrNew" class="textfield">
+        <option value="新">新</option>
+        <option value="新">旧</option>
+        </select>
+				</td>
+        <td height="20" align="left" width="10%">评估日期：</td>
+        <td  WIDTH='15%'><input name="Evaluatdate" type="text" class="dateISO required textfield" id="Evaluatdate" value="" maxlength="100" onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})"></td>
+        <td height="20" align="left" width="10%">联系电话：</td>
+        <td width="15%"><input name="Telephone" type="text" class="textfield" id="Telephone" value="" maxlength="100" ></td>
+      </tr>
+      <tr>
+        <td height="20" colspan="8">
+			<table width="100%" border="0" id="editDetails" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+		  <tbody id="TbDetails">
+		  <tr height="18">
+      <td width="5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>序号</strong></font></td>
+      <td width="8%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>考核部门</strong></font></td>
+      <td width="12%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>内容</strong></font></td>
+      <td width="35%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>评分标准</strong></font></td>
+      <td width="8%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>得分标准</strong></font></td>
+      <td width="8%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>实际得分</strong></font></td>
+      <td width="24%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>考核意见</strong></font></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td rowspan="5">1</td>
+      <td rowspan="5">工程部</td>
+      <td rowspan="5">工程研发能力</td>
+      <td>是否具备自主开发能力</td>
+      <td>3</td>
+      <td><input type="text" class="number textfield" name="p1" id="p1" value="0"/></td>
+      <td rowspan="5"><textarea  class="textfield" style="height:120px; font-size:12px;" id="Enopinion" name="Enopinion"></textarea></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>是否愿与我司长期建立合作伙伴</td>
+      <td>5</td>
+      <td><input type="text" class="number textfield" name="p2" id="p2" value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>是否拥有制造过程需要的全部设备</td>
+      <td>10</td>
+      <td><input type="text" class="number textfield" name="p3" id="p3"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>核心设备不全是否大部分外协加工</td>
+      <td>8</td>
+      <td><input type="text" class="number textfield" name="p4" id="p4"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>客户中有世界著名品牌客户</td>
+      <td>4</td>
+      <td><input type="text" class="number textfield" name="p5" id="p5"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td rowspan="5">2</td>
+      <td rowspan="5">品保部</td>
+      <td rowspan="5">品质控制能力</td>
+      <td>是否专业成品检验及制程检验并记录</td>
+      <td>5</td>
+      <td><input type="text" class="number textfield" name="p6" id="p6"  value="0"/></td>
+      <td rowspan="5"><textarea  class="textfield" style="height:120px; font-size:12px;" id="Qcopinion" name="Qcopinion"></textarea></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>有制定产品检验标准并严格按照标准生产</td>
+      <td>10</td>
+      <td><input type="text" class="number textfield" name="p7" id="p7"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>作业环境干净整洁， 5S标示完善</td>
+      <td>5</td>
+      <td><input type="text" class="number textfield" name="p8" id="p8" value="0" /></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>工厂设备很先进并有定期保养及校正</td>
+      <td>5</td>
+      <td><input type="text" class="number textfield" name="p9" id="p9" value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>有推行ISO9000并严格实施</td>
+      <td>5</td>
+      <td><input type="text" class="number textfield" name="p10" id="p10"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td rowspan="6">3</td>
+      <td rowspan="6">采购部</td>
+      <td rowspan="6">供货能力</td>
+      <td>是否有专人生产接单，并电脑系统记录</td>
+      <td>8</td>
+      <td><input type="text" class="number textfield" name="p11" id="p11" value="0" /></td>
+      <td rowspan="6"><textarea  class="textfield" style="height:150px; font-size:12px;" id="Poopinion" name="Poopinion"></textarea></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>生产配合意愿度高</td>
+      <td>8</td>
+      <td><input type="text" class="number textfield" name="p12" id="p12"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>接单人员对制品之了解能力</td>
+      <td>3</td>
+      <td><input type="text" class="number textfield" name="p13" id="p13"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>生产地点距离公司50公里</td>
+      <td>10</td>
+      <td><input type="text" class="number textfield" name="p14" id="p14"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>交货周期能否满足我司</td>
+      <td>6</td>
+      <td><input type="text" class="number textfield" name="p15" id="p15"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td>价格能否满足我司需求</td>
+      <td>5</td>
+      <td><input type="text" class="number textfield" name="p16" id="p16"  value="0"/></td>
+      </tr>
+      <tr bgColor="#EBF2F9">
+      <td colspan="3">合计</td>
+      <td>满分100分</td>
+      <td>最终得分：</td>
+      <td><input type="text" class="number textfield" name="pall" id="pall" value="0" readonly="readonly"/></td>
+      <td></td>
+      </tr>
+      </tbody>
+      </table>
+      	</td>
+      </tr>
+      <tr>
+      <td colspan="8">备注：得分80分以上（含）可列入我司合格供方；79-60分（含）列入待考察阶段；60分一下列入不合格供方，特殊情况经总经理裁决。</td>
+      </tr>
+      <tr>
+      <td >评估人员最终建议：</td>
+      <td colspan="7"><textarea class="textfield" id="Remark" name="Remark" style="height:80px; font-size:12px;"></textarea></td>
+      </tr>
+      <tr>
+      <td>制单/日期：</td>
+      <td colspan="3">
+      <input type="text" class="textfield" style="width:20%" id="Biller" name="Biller" readonly="readonly"/>
+      /
+      <input type="text" class="textfield" style="width:40%" id="BillDate" name="BillDate" readonly="readonly"/>
+      </td>
+      <td>审核/日期：</td>
+      <td colspan="3">
+      <input type="text" class="textfield" style="width:20%" id="Checker" name="Checker" readonly="readonly"/>
+      /
+      <input type="text" class="textfield" style="width:40%" id="CheckDate" name="CheckDate" readonly="readonly"/>
+      </td>
+      </tr>
+      <tr>
+      <td>评估/日期：</td>
+      <td colspan="2">
+      <input type="text" class="textfield" style="width:40%" id="Ener" name="Ener" readonly="readonly"/>
+      /
+      <input type="text" class="textfield" style="width:40%" id="EnDate" name="EnDate" readonly="readonly"/>
+      </td>
+      <td colspan="2">
+      <input type="text" class="textfield" style="width:40%" id="Qcer" name="Qcer" readonly="readonly"/>
+      /
+      <input type="text" class="textfield" style="width:40%" id="QcDate" name="QcDate" readonly="readonly"/>
+      </td>
+      <td colspan="2">
+      <input type="text" class="textfield" style="width:40%" id="Poer" name="Poer" readonly="readonly"/>
+      /
+      <input type="text" class="textfield" style="width:40%" id="PoDate" name="PoDate" readonly="readonly"/>
+      </td>
+      <td></td>
+      </tr>
+		</table>
+		</td>
+  </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input type="submit" class="submit button"  value="确定" style="WIDTH: 80;">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="$('#addDiv').hide('slow').css('z-index','500');">&nbsp;
+	  </td>
+	</tr>
+</table>
+</form>
+</div>
+</BODY>
+</HTML>

@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<script language="javascript" src="../Script/AdvSearch.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table width="100%" id="QueryTable" style="border: 1px solid #99BBE8;"></table>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+QueryArea=[{name:'申请日期',value:'RegDate',type:3},
+{name:'生产任务单号',value:'ICMOId'},
+{name:'订单号',value:'OrderId'},
+{name:'原因分类',value:'RegistType'},
+{name:'申请部门',value:'Departmentname'},
+{name:'审核状态',value:'CheckFlag',type:1,Content:[{CValue:'0',title:'未审核'},{CValue:'1',title:'已审核'},{CValue:'2',title:'已审批'},{CValue:'3',title:'已执行'},{CValue:'4',title:'已结案'}]},
+{name:'作废',value:'CancelFlag',type:1,Content:[{CValue:'1',title:'已作废'},{CValue:'0',title:'正常'}]}
+];
+function doSearch(){
+		$("#flex1").flexOptions({newp: 1, params:[
+			{name:"AllQuery",value:$('#AllQuery').val()}]
+		});
+		$("#flex1").flexReload();
+}
+$(function(){
+	AdvSearch();
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$('#RegDate').datepick({dateFormat: 'yyyy-mm-dd'});
+	$('#PlanEndDate').datepick({dateFormat: 'yyyy-mm-dd'});
+	$("#AddForm").validate({
+		submitHandler:function(form){
+			$("input:submit").each(function() {this.disabled = true;});
+			$.post('ICMOUnEndDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+				if(data.indexOf("###")==-1) alert(data);
+				else $("#flex1").flexReload();
+				$("input:submit").each(function() {this.disabled = false;});
+			});
+			$("#addDiv").hide("slow");
+			$("#addDiv").css("z-index","500");
+		}
+	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'ICMOUnEndDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: 'ID', name : 'SerialNum', width : 50, sortable : true, align: 'left'},
+	{display: '申请日期', name : 'RegDate', width : 50, sortable : true, align: 'left'},
+	{display: '申请部门', name : 'Departmentname', width : 40, sortable : true, align: 'left'},
+	{display: '申请人', name : 'RegisterName', width : 40, sortable : true, align: 'left'},
+	{display: '生产任务单号', name : 'ICMOId', width : 70, sortable : true, align: 'left'},
+	{display: '订单号', name : 'OrderId', width : 60, sortable : true, align: 'left'},
+	{display: '原因分类', name : 'RegistType', width : 60, sortable : true, align: 'left'},
+	{display: '反结案原因', name : 'Reason', width : 120, sortable : true, align: 'left'},
+	{display: '预计完成时间', name : 'PlanEndDate', width : 50, sortable : true, align: 'left'},
+	{display: '实际完成时间', name : 'EndDate', width : 50, sortable : true, align: 'left'},
+	{display: '状态', name : 'CheckFlag', width : 30, sortable : true, align: 'left'},
+	{display: '作废', name : 'CancelFlag', width : 30, sortable : true, align: 'left'},
+	{display: '备注', name : 'Remark', width : 200, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '审核',  onpress : test},
+		{separator: true},
+		{name: '审批',  onpress : test},
+		{separator: true},
+		{name: '执行',  onpress : test},
+		{separator: true},
+		{name: '结案',  onpress : test},
+		{separator: true},
+		{name: '复制任务单号',  onpress : test},
+		{separator: true},
+		{name: '导出',  onpress : test},
+		{separator: true}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: false,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '生产任务反结案申请',
+	showTableToggleBtn: true,
+	showcheckbox: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		getInfo('SerialNum');
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('ICMOUnEndDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":AllSNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				getInfo('Register');
+				var yestoday=showdate(-1);
+				$('#RegDate').val(yestoday);
+				$('#detailType').val('AddNew');
+				$("#addDiv").show("slow");
+			}			
+		else if (com=='维护')
+			{
+				$('#AddForm').resetForm();
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				$('#SerialNum').val($('.trSelected', grid).attr("id").replace("row",""));
+				getInfo('SerialNum');
+				$("#addDiv").show("slow");
+				$('#detailType').val('Edit');
+			}			
+		else if (com=='审核'||com=='审批'||com=='执行'||com=='结案')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				ToProcess(com,AllSNum);
+			
+			}			
+		else if (com=='复制任务单号')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("ch").split('_ZZ$BH_')[4];
+				window.clipboardData.setData("Text",SNum); 
+			}
+		else if (com=='导出')
+			{
+				window.open("ICMOUnEndDetails.asp?print_tag=1&showType=getInfo&detailType=Excel&AllQuery="+encodeURI($('#AllQuery').val()),"Print","","false");
+			}
+	}
+
+function closead1(){
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+function getInfo(obj){
+  if($("#"+obj).val()==''&&obj!='Register'){alert("对应编号不能为空！");return false;}
+	$.get("ICMOUnEndDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1){alert(data);$("#"+obj).val('');}
+		 else{
+			 var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+		   if(obj=="SerialNum"){
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+				   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+				   if(datajson.fieldValue[0][fieldone.id]){
+					 $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+				   }
+				 }
+			   });
+		   }else if(obj=="Zeren"){
+			 	$('#ZerenID').val(datajson.fieldValue[0].Register);
+			 	$('#Zeren').val(datajson.fieldValue[0].RegisterName);
+		   }else if(obj=="Register"){
+			 	$('#Register').val(datajson.fieldValue[0].Register);
+			 	$('#RegisterName').val(datajson.fieldValue[0].RegisterName);
+			 	$('#Departmentname').val(datajson.fieldValue[0].Departmentname);
+			 	$('#Department').val(datajson.fieldValue[0].Department);
+			 }else if(obj=="ICMOId"){
+			 	$('#ICMOId').val(datajson.fieldValue[0].ICMOId);
+			 	$('#OrderId').val(datajson.fieldValue[0].OrderId);
+			 	$('#FNumber').val(datajson.fieldValue[0].FNumber);
+			 	$('#FName').val(datajson.fieldValue[0].FName);
+			 	$('#FModel').val(datajson.fieldValue[0].FModel);
+			 	$('#FDepartMent').val(datajson.fieldValue[0].FDepartMent);
+			 	$('#FAuxQty').val(datajson.fieldValue[0].FAuxQty);
+			 	$('#FPlanFinishDate').val(datajson.fieldValue[0].FPlanFinishDate);
+			 	$('#FAuxStockQty').val(datajson.fieldValue[0].FAuxStockQty);
+			 	$('#FStatus').val(datajson.fieldValue[0].FStatus);
+			 }
+		 }
+	   });
+}
+function toSubmit(){
+	if($('#ICMOId').val()==''){alert('生产任务单不能为空');return false;}
+	if($('#PlanEndDate').val()==''){alert('预计完成时间不能为空');return false;}
+  $.post('ICMOUnEndDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+    if(data.indexOf("###")==-1) alert(data);
+	else $("#flex1").flexReload();
+  });
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+
+function ToProcess(com,SNum){
+	var txt='说明：<textarea name="operattext" id="operattext" style="width:300px;height:100px;"></textarea>';
+	$.prompt(txt,{
+		buttons: { 同意: 'Y', 不同意: 'Z', 反审核: 'N' },
+		submit:function(v,m,f){ 
+			$.post('ICMOUnEndDetails.asp',{
+				showType:'DataProcess',
+				detailType:com,
+				SerialNum:SNum,
+				direct:v,
+				operattext:f.operattext
+			 },function(data){
+				alert(data);
+				if(data.indexOf('成功')>0)$("#flex1").flexReload();
+			});
+			$.prompt.close();
+			return false; 
+		 }
+	 });
+}
+
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm">
+<table width="100%" border="0" cellpadding="3" cellspacing="1">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>生产任务反结案申请</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id=editNews>
+      <tr>
+        <td height="20" align="left" width="10%">ID号：</td>
+        <td WIDTH="15%">
+		<input name="SerialNum" type="text" class="textfield" id="SerialNum" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">申请人工号：</td>
+        <td  WIDTH="15%"><input name="Register" type="text" class="required textfield" id="Register" value="" onchange="getInfo('Register')"></td>
+        <td height="20" align="left" width="10%">申请人姓名：</td>
+        <td  WIDTH="15%"><input name="RegisterName" type="text" class="textfield" id="RegisterName" value="" readonly></td>
+        <td height="20" align="left" width="10%">申请日期：</td>
+        <td  WIDTH="15%"><input name="RegDate" type="text" class="dateISO required textfield" id="RegDate" value="" maxlength="100" ></td>
+      </tr>
+      <tr>
+        <td height="20" align="left" width="10%">申请人部门：</td>
+        <td  WIDTH="15%"><input name="Departmentname" type="text" class="required textfield" id="Departmentname" value="" readonly></td>
+        <td height="20" align="left" width="10%">部门编号：</td>
+        <td  WIDTH="15%"><input name="Department" type="text" class="textfield" id="Department" value="" readonly></td>
+        <td height="20" align="left" width="10%">生产任务单号：</td>
+        <td WIDTH="15%"><input name="ICMOId" type="text" class="required textfield" id="ICMOId" value="" onchange="getInfo('ICMOId')"></td>
+        <td height="20" align="left" width="10%">订单号：</td>
+        <td WIDTH="15%"><input name="OrderId" type="text" class="textfield" id="OrderId" value="" readonly></td>
+      </tr>
+      <tr>
+        <td height="20" align="left" width="10%">产品代码：</td>
+        <td  WIDTH="15%"><input name="FNumber" type="text" class="textfield" id="FNumber" value="" readonly></td>
+        <td height="20" align="left" width="10%">产品名称：</td>
+        <td  WIDTH="15%"><input name="FName" type="text" class="textfield" id="FName" value="" readonly></td>
+        <td height="20" align="left" width="10%">规格型号：</td>
+        <td WIDTH="15%"><input name="FModel" type="text" class="textfield" id="FModel" value="" readonly></td>
+        <td height="20" align="left" width="10%">生产车间：</td>
+        <td WIDTH="15%"><input name="FDepartMent" type="text" class="textfield" id="FDepartMent" value="" readonly></td>
+      </tr>
+      <tr>
+        <td height="20" align="left" width="10%">计划生产数量：</td>
+        <td  WIDTH="15%"><input name="FAuxQty" type="text" class="textfield" id="FAuxQty" value="" readonly></td>
+        <td height="20" align="left" width="10%">计划完工日期：</td>
+        <td  WIDTH="15%"><input name="FPlanFinishDate" type="text" class="textfield" id="FPlanFinishDate" value="" readonly></td>
+        <td height="20" align="left" width="10%">入库数量：</td>
+        <td WIDTH="15%"><input name="FAuxStockQty" type="text" class="textfield" id="FAuxStockQty" value="" readonly></td>
+        <td height="20" align="left" width="10%">单据状态：</td>
+        <td WIDTH="15%"><input name="FStatus" type="text" class="textfield" id="FStatus" value="" readonly></td>
+      </tr>
+      <tr>
+        <td height="20" align="left" width="10%">原因类型</td>
+        <td  WIDTH="15%">
+				<select id="RegistType" name="RegistType">
+				<option value="补料">补料</option>
+				<option value="退料">退料</option>
+				<option value="调整工价">调整工价</option>
+				<option value="工序建立不及时">工序建立不及时</option>
+				<option value="工序工价审核不及时">工序工价审核不及时</option>
+				<option value="工资报表上报不及时">工资报表上报不及时</option>
+				<option value="员工工资上报有误">员工工资上报有误</option>
+				<option value="领料不及时">领料不及时</option>
+				<option value="报表输入有误">报表输入有误</option>
+				<option value="统计审核不及时">统计审核不及时</option>
+				<option value="仓库提前入库">仓库提前入库</option>
+				<option value="系统原因">系统原因</option>
+				<option value="其他">其他</option>
+				</select>
+        <td height="20" align="left" width="10%">预计完成时间</td>
+        <td  WIDTH="15%"><input name="PlanEndDate" type="text" class="required dateISO textfield" id="PlanEndDate" value="" maxlength="200" ></td>
+        <td height="20" align="left" width="10%">责任人：</td>
+        <td  WIDTH="15%">
+        <input type="hidden" name="ZerenID" id="ZerenID" />
+        <input name="Zeren" type="text" class="required textfield" id="Zeren" value="" maxlength="200" onchange="getInfo('Zeren')"></td>
+        <td height="20" align="left" width="10%">实际完成时间</td>
+        <td  WIDTH="15%"><input name="EndDate" type="text" class="textfield" id="EndDate" value="" readonly></td>
+      </tr>
+      <tr>
+        <td height="60" align="left">反结案原因</td>
+        <td colspan="7"><textarea id="Reason" name="Reason" style="width:90%;height:60px;"></textarea></td>
+      </tr>
+      <tr>
+        <td height="60" align="left">备注</td>
+        <td colspan="7"><textarea id="Remark" name="Remark" style="width:90%;height:60px;"></textarea></td>
+      </tr>
+      <tr>
+        <td height="20" align="left" width="10%">制单人：</td>
+        <td  WIDTH="15%"><input name="Biller" type="text" class="textfield" id="Biller" value="" readonly></td>
+        <td height="20" align="left" width="10%">制单日期：</td>
+        <td  WIDTH="15%"><input name="BillDate" type="text" class="textfield" id="BillDate" value="" readonly></td>
+        <td height="20" align="left" width="10%">审核人：</td>
+        <td WIDTH="15%"><input name="Checker" type="text" class="textfield" id="Checker" value="" readonly></td>
+        <td height="20" align="left" width="10%">审核时间：</td>
+        <td WIDTH="15%"><input name="CheckDate" type="text" class="textfield" id="CheckDate" value="" readonly></td>
+      </tr>
+      <tr>
+        <td height="20" align="left" width="10%">审批人：</td>
+        <td  WIDTH="15%"><input name="Approvaler" type="text" class="textfield" id="Approvaler" value="" readonly></td>
+        <td height="20" align="left" width="10%">审批日期：</td>
+        <td  WIDTH="15%"><input name="ApprovalDate" type="text" class="textfield" id="ApprovalDate" value="" readonly></td>
+        <td height="20" align="left" width="10%">执行人：</td>
+        <td WIDTH="15%"><input name="Implementer" type="text" class="textfield" id="Implementer" value="" readonly></td>
+        <td height="20" align="left" width="10%">执行时间：</td>
+        <td WIDTH="15%"><input name="ImplementDate" type="text" class="textfield" id="ImplementDate" value="" readonly></td>
+      </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" colspan="8" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input name="submitSaveAdd" type="submit" class="submit button"  value="保存" style="WIDTH: 80;" >&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="closead1()">&nbsp;
+	  </td>
+	</tr>
+      <tr>
+        <td height="40" align="left">审核意见</td>
+        <td colspan="3"><textarea id="CheckText" name="CheckText" style="width:90%;height:40px;"></textarea></td>
+        <td height="40" align="left">审批意见</td>
+        <td colspan="3"><textarea id="ApprovalText" name="ApprovalText" style="width:90%;height:40px;"></textarea></td>
+      </tr>
+      <tr>
+        <td height="40" align="left">执行意见</td>
+        <td colspan="7"><textarea id="ImplementText" name="ImplementText" style="width:90%;height:40px;"></textarea></td>
+      </tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+</div>
+</BODY>
+</HTML>

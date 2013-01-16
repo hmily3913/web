@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<style type="text/css">
+* {margin: 0;padding: 0;list-style:none;font-weight:normal;line-height:180%;}img {border:0;}body {font-family: Verdana, Arial, Helvetica, sans-serif;background-color:transparent;color:#000;font-size:12px;text-align:center;}a {color:#000;text-decoration:none;}a:hover {color:#FF6600;text-decoration:underline;}em {font-style:normal;}strong {}a strong {}select {height:20px;line-height:20px;}ul.row {clear:both;}ul.row li {float:left;margin:0 4px;}ul.row li a {display:inline;height:22px;line-height:22px;}.more a {}ul.col li {margin:4px auto;text-align:center;font-size:14px;font-weight:bold;}ul.col li #city {font-weight:bold;margin-left:10px;}ul.col li a {font-size:14px;font-weight:bold;}ul.col .small {padding-top:6px;}ul.col .small a {font-size:12px;}ul.col .line {padding:10px;border-bottom:1px dashed #ddd;}dl {clear:both;margin:0 auto;}dl dt {float:left;height:65px;margin-right:10px;}dl dt strong {display:block;margin-top:5px;*margin-top:10px;_margin-top:15px;}dl dt a {}dl dd {margin-left:5px;text-align:left;height:18px;line-height:18px;padding:0;margin:0;}dl .title {margin-bottom:4px;_margin-bottom:-4px;}dl .title #city {font-size:14px;font-weight:bold;}#cj {clear:both;}#left {float:left;text-align:center;width:40%;}#left h3 { margin-bottom:4px;}#left h3 #city {font-size:14px;font-weight:bold;}#cj h4 {font-size:12px;margin-bottom:5px;}#right {margin-left:10px;text-align:left;float:left;width:55%;}#cjbg {background:url(/Images/weather/bg.gif) left bottom repeat-x;height:90px;padding:10px;}#cjbg .line {border-left:1px solid #ddd;padding-left:8px;}#cjbg h4 {font-size:12px;}#right h3 #city {font-size:14px;margin-right:10px;font-weight:bold;margin-bottom:4px;}ul.new { background-color:transparent; height:28px; line-height:28px;}ul.new li a img { margin-top:4px;}ul.new li a em {font-weight:bold;color:#fff;line-height:28px;}ul.new li a:hover {text-decoration:none;color:#000;}ul.new li a:hover em {color:#000;}#eNew {text-align:left;margin:0 auto;width:150px;height:180px;}#eNew h1 {font-size:20px;margin-bottom:0;}#eNew h2 a em { font-size:14px; font-weight:normal;}#eNew h4 {background:url(/Images/weather/w.gif) left top no-repeat;height:43px;line-height:43px;text-indent:1em;width:150px;}#eNew h4 a em {line-height:43px;font-size:18px;font-weight:blod;}#eNew p {font-size:12px;}.blue{ text-align:right;}.blue li a{ color:#0070C0;}ul.blue li{ float:right;}
+</style>
+</head>
+<body>
+<div id="cj">
+  <div id="left">
+    <h3><a id="url1" href="" target="_blank"><em id="city"></em></a></h3>
+    <p><a id="url2" href="" target="_blank"><img id="big1" src="" alt=""/></a>&nbsp;<a id="url3" href="" target="_blank"><img id="big2" src="" alt="" /></a></a></p>
+    <h4><a id="url4" href="" target="_blank"><em id="weather1"></em></a></h4>
+
+  </div>
+  <div id="right">
+    <h4>温　度：<a id="url5" href="" target="_blank"><em id="temp1"></em></a></h4>
+    <h4>风　力：<a id="url6" href="" target="_blank"><em id="wd1"></em></a></h4>
+    <h4>紫外线：<a id="url7" href="" target="_blank"><em id="index_uv"></em></a></h4>
+    <h4 class="more"><a id="url8" href="" target="_blank">未来七天预报</a></h4>
+  </div>
+  <div style="width:90%;text-align:left;"><em id="index_d"></em>
+  <div style="width:90%;text-align:left;"><h4>发布日期：<em id="date_y"></em><em id="fchh"></em>时</h4>
+  </div>
+</div>
+<script type="text/javascript">
+var id1;
+var ids="url1,url2,url3,url4,url5,url6,url7";
+var url="/Include/weather.htm";
+var start=url.indexOf("id");
+var end=url.indexOf("T");
+var nodes=ids;
+if(typeof nodes=="string"){nodes=nodes.split(",");}
+for( var i=0; i<nodes.length; i++){if(document.getElementById(nodes[i])){document.getElementById(nodes[i]).href=url;}}
+var id="101210701";
+jQuery.get("weatherdata.asp",function(data){
+	if(data.length>0){
+		var jsonobj=jQuery.parseJSON(data);
+		var parseData=new Object();
+		with(jsonobj.weatherinfo){
+			parseData={
+				city:{innerHTML:city.substring(0,1).toUpperCase()+city.substring(1)},
+				weather1:{innerHTML:weather1},
+				temp1:{innerHTML:temp1},
+				wd1:{innerHTML:fl1},
+				img1:{innerHTML:img1},
+				img2:{innerHTML:img2},
+				index:{innerHTML:index},
+				index_d:{innerHTML:index_d},
+				index_xc:{innerHTML:index_xc},
+				index_uv:{innerHTML:index_uv},
+				url8:{href:"http://www.weather.com.cn/weather/"+id+".shtml#7d"},
+				date_y:{innerHTML:date_y},
+				week:{innerHTML:week},
+				fchh:{innerHTML:fchh},
+				small:{src:"/Images/weather/c"+img_single+".gif",title:img_title_single},
+				small1:{src:"/Images/weather/c"+img1+".gif",title:img_title1},
+				small2:{src:img2==99?"":"/Images/weather/c"+img2+".gif",title:img_title2},
+				big:{src:"/Images/weather/b"+img_single+".gif",title:img_title_single},
+				big1:{src:"/Images/weather/b"+img1+".gif",title:img_title1},
+				big2:{src:(img2==99)?"":"/Images/weather/b"+img2+".gif",title:(img2==99)?"":img_title2,width:(img2==99)?"0":"50",alt:(img2==99)?"":"img_title2"}
+			}
+		}
+		for( var m in parseData){
+			var node=document.getElementById(m);
+			var sets=parseData[m];
+			if(node){
+				for( var prop in sets ){
+					node[prop]=sets[prop];
+				}
+			}
+		}
+	}
+});
+</script>
+</body>
+</html>

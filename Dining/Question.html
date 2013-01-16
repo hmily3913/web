@@ -1,0 +1,277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$("#AddForm").validate({
+		submitHandler:function(form){
+				var result=""; 
+				var Answer="";
+				var boolflag=false;
+				if($(':input:radio[name=Question_type]:checked',$("#AddForm")).val()==5){
+					Answer="";
+					boolflag=false;
+					result="";
+				}else{
+					$(':input[name=Answer]',$('#AddForm')).each(function(i,fieldone){
+						var Answer_g=fieldone.value.replace(/&/g,"");
+						if(Answer_g==''){
+							boolflag=true;
+						}
+						if(i==0){Answer=Answer_g;result="0"}
+						else{Answer=Answer+"&"+Answer_g;result=result+",0";}
+					});
+				}
+				if(boolflag){alert("请输入完整所有的问题选项");return false;}
+				$("input:submit").each(function() {this.disabled = true;});
+				$.post('QuestionDetails.asp?showType=DataProcess',{
+					"Question_type":$(':input:radio[name=Question_type]:checked',$("#AddForm")).val(),
+					"SerialNum":$('#SerialNum',$("#AddForm")).val(),
+					"Question_answer":Answer,
+					"Question_content":$('#Question_content',$("#AddForm")).val(),
+					"ClassType":$('#ClassType',$("#AddForm")).val(),
+					"showType":"DataProcess",
+					"detailType":$('#detailType',$("#AddForm")).val()
+				},function(data){
+					alert(data);
+					if(data.indexOf("成功")>-1)$("#flex1").flexReload();
+					$("input:submit").each(function() {this.disabled = false;});
+				});
+				$("#addDiv").hide("slow");
+				$("#addDiv").css("z-index","500");
+		}
+	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'QuestionDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '序号', name : 'SerialNum', width : 60, sortable : true, align: 'left'},
+	{display: '问题分类', name : 'ClassType', width : 60, sortable : true, align: 'left'},
+	{display: '问题类型', name : 'Question_type', width : 60, sortable : true, align: 'left'},
+	{display: '题目内容', name:'Question_content',width : 120, sortable : true, align: 'left'},
+	{display: '是否必填', name:'Question_must',width : 40, sortable : true, align: 'left'},
+	{display: '作废', name:'CancelFlag',width : 40, sortable : true, align: 'left'},
+	{display: '已使用', name:'UseFlag',width : 40, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '禁用',  onpress : test},
+		{separator: true},
+		{name: '启用',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '问题分类', name : 'ClassType', isdefault: true},
+		{display: '题目内容', name : 'Question_content'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: false,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '问卷题目管理',
+	showTableToggleBtn: true,
+	showcheckbox: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		getInfo('SerialNum');
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('QuestionDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":AllSNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#detailType').val('AddNew');
+				$("#addDiv").show("slow");
+			}			
+		else if (com=='禁用'){
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('QuestionDetails.asp?showType=DataProcess&detailType=Forbid',{"SerialNum":AllSNum},function(data){
+					alert(data);
+					if(data.indexOf("成功")>-1) $("#flex1").flexReload();
+				  });
+				}
+		}
+		else if (com=='启用'){
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('QuestionDetails.asp?showType=DataProcess&detailType=unForbid',{"SerialNum":AllSNum},function(data){
+					alert(data);
+					if(data.indexOf("成功")>-1) $("#flex1").flexReload();
+				  });
+				}
+		}
+	}
+
+
+function closead1(){
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("QuestionDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+			 var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			 $('#ClassType',$("#AddForm")).val(datajson.fieldValue.ClassType);
+			 $('#Question_content',$("#AddForm")).val(datajson.fieldValue.Question_content);
+			 $(':input:radio[name=Question_type][value='+datajson.fieldValue.Question_type+']',$("#AddForm")).attr('checked','checked');
+			 var Answer=datajson.fieldValue.Question_answer.split('&');
+			 $('#ulAnswer li:gt(0)').remove();
+			 for(var i=0;i<Answer.length;i++){
+				 $('#ulAnswer').append($('#ulAnswer li:last').clone());
+				 $('#ulAnswer li:eq('+i+') :input[name=Answer]').val(Answer[i]);
+			 }
+			 doChecked(null,datajson.fieldValue.Question_type);
+		 }
+	 });
+}
+function doChecked(obj,num){
+	var val;
+	if(num==0)val=obj.value;
+	else val=num;
+	if(val==1||val==2){
+		$('#ulAnswer').show();
+		$('#Answer_2').hide();
+		$('#Question_add_content').show();
+	}else if (val==3||val==4){
+		$('#ulAnswer').show();
+		$('#Answer_2').show();
+		$('#Question_add_content').show();
+	}else if (val==5){
+		$('#ulAnswer').hide();
+		$('#Answer_2').show();
+		$('#Question_add_content').show();
+	}
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm" style="margin:0; padding:0 ">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>问卷题目管理</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td>
+请选择题目类型：单选题<input name="Question_type" type="radio" value="1" onClick="doChecked(this,0)">
+| 多选题<input name="Question_type" type="radio" value="2" onClick="doChecked(this,0)">
+|  带文字输入的单选题<input name="Question_type" type="radio" value="3" onClick="doChecked(this,0)">
+| 带文字输入的多选题<input name="Question_type" type="radio" value="4" onClick="doChecked(this,0)">
+|  问答题<input name="Question_type" type="radio" value="5" onClick="doChecked(this,0)">
+</td>
+    </tr>
+      <tr id="Question_add_content" style="display:none;">
+        <td height="20" align="left" style="padding:30px;">
+问题：<input name="Question_content" id="Question_content" type="text" class="required textfield" size="40" style=" width:50%">
+<br/>
+问题分类：<select id="ClassType" name="ClassType" class="textfield" style="width:15%;">
+<option value="食堂试题">食堂试题</option>
+<option value="其他试题">其他试题</option>
+</select>
+<!--必答题：<label for="Question_must1">是</label><input type="radio" id="Question_must1" name="Question_must" value="1" checked="checked"/>
+&nbsp;&nbsp; <label for="Question_must2">否</label><input type="radio" id="Question_must2" name="Question_must" value="0"/>-->
+<br/>
+备选项：
+<ul type="1" id="ulAnswer" style=" padding-bottom:0px; margin-bottom:0px;">
+<li><input type="text" name="Answer" class="textfield" style=" width:50%"></li>
+<li><input type="text" name="Answer" class="textfield" style=" width:50%"></li>
+<li><input type="text" name="Answer" class="textfield" style=" width:50%"></li>
+<li><input type="text" name="Answer" class="textfield" style=" width:50%"></li>
+<li><input type="text" name="Answer" class="textfield" style=" width:50%"></li>
+</ul>
+<br/>
+<input type="text" name="Answer_2" id="Answer_2" class="textfield" readonly="true" style="margin:0;color:#999999; width:50%" value="用户在此框输入自定义文本">
+<br/><br/>
+<div id="button">
+<input type="hidden" name="SerialNum" id="SerialNum" value="">
+<input type="hidden" name="detailType" id="detailType" value="">
+<input type="button" name="MoreAnswer1" value="增加选项" class="button" onClick="$('#ulAnswer').append($('#ulAnswer li:last').clone());">
+<input type="button" name="LessAnswer1" value="减少选项" class="button" onClick="$('#ulAnswer li:last').remove();">
+<input type="submit" value="保存题目" class="submit button">
+</div>
+        </td>
+      </tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+</div>
+</BODY>
+</HTML>

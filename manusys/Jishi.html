@@ -1,0 +1,662 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<script language="javascript" src="../Script/jquery.setTime.js"></script>
+<link rel="stylesheet" href="../Images/jquery.tools.css">
+<script language="javascript" src="../Script/jquery.tools.min.js"></script>
+<link rel="stylesheet" href="../Images/jquery.autocomplete.css">
+<script language="javascript" src="../Script/jquery.autocomplete.pack.js"></script>
+<link rel="stylesheet" href="../Images/zTreeStyle.css">
+<script language="javascript" src="../Script/jquery.ztree-2.6.min.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+
+</style>
+
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+	
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$(".css-tabs:first").tabs(".css-panes:first > div");
+//	$("#AddForm").validate({
+//		submitHandler:function(form){
+//		}
+//	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'JishiDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: 'ID', name : 'SerialNum', width : 60, sortable : true, align: 'left'},
+	{display: '部门', name : 'Bumen', width : 50, sortable : true, align: 'left'},
+	{display: '日期', name : 'RegDate', width : 50, sortable : true, align: 'left'},
+	{display: '姓名', name : 'EmpName', width : 50, sortable : false, align: 'left'},
+	{display: '订单', name : 'OrderID', width : 60, sortable : true, align: 'left'},
+	{display: '产品型号', name : 'Product', width : 50, sortable : true, align: 'left'},
+	{display: '计时类别', name : 'ReasonType', width : 50, sortable : true, align: 'left'},
+	{display: '原因', name : 'Reason', width : 100, sortable : true, align: 'left'},
+	{display: '开始时间', name : 'StartTime', width : 40, sortable : true, align: 'left'},
+	{display: '结束时间', name : 'EndTime', width : 40, sortable : true, align: 'left'},
+	{display: '所用时间', name : 'Shijian', width : 50, sortable : true, align: 'left'},
+	{display: '完成数', name : 'Wancheng', width : 50, sortable : true, align: 'left'},
+	{display: '单价/小时', name : 'Danjia', width : 50, sortable : true, align: 'left'},
+	{display: '金额', name : 'Jine', width : 50, sortable : true, align: 'left'},
+	{display: '审核', name : 'CheckFlag', width : 50, sortable : true, align: 'left'},
+//	{display: '作废', name : 'CancelFlag', width : 50, sortable : true, align: 'left'},
+	{display: '登记人', name : 'Biller', width : 50, sortable : true, align: 'left'},
+	{display: '登记日期', name : 'BillDate', width : 50, sortable : true, align: 'left'},
+	{display: '审核人', name : 'Checker1', width : 50, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '审核',  onpress : test},
+		{separator: true},
+		{name: '执行',  onpress : test},
+		{separator: true},
+		{name: '查汇总',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '单号', name : 'a.SerialNum', isdefault: true},
+		{display: '部门', name : 'a.bumen'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "a.SerialNum",
+	sortorder: "desc",
+	singleSelect: false,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '员工计时单',
+	showTableToggleBtn: true,
+	showcheckbox: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#TbDetails tr:gt(1)').remove();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		getInfo('SerialNum');
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('JishiDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":AllSNum},function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='执行')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要执行单号为：' + AllSNum + ' 的记录?')){
+				  $.post('JishiDetails.asp?showType=DataProcess&detailType=Finish',{"SerialNum":AllSNum},function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#t1 tr:gt(1)').remove();
+				$('#t1 tbody').append($('#t1 tr:eq(1)').clone().show());
+				$('#t2 tr:gt(1)').remove();
+				$('#t2 tbody').append($('#t2 tr:eq(1)').clone().show());
+				$('#detailType').val('AddNew');
+				var yestoday=showdate(0);
+				$('#RegDate').val(yestoday);
+				$("#addDiv").show("slow");
+//				$("#addDiv").css("z-index","500");
+			}			
+		else if (com=='审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				
+				var txt='';
+				$.prompt(txt,{
+					buttons: { 审核: 'Check', 反审核: 'unCheck' },
+					submit:function(v,m,f){ 
+							$.post('JishiDetails.asp',{
+								showType:'DataProcess',
+								detailType:v,
+								SerialNum:AllSNum
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+							return false; 
+					 }
+				 });
+			}			
+		else if (com=='查汇总')
+			{
+				var txt='';
+				txt+='日期：从<input name="SDate" type="text" class="textfield" id="SDate" style="width:30%;" value="" maxlength="100"  onfocus="$(this).datepick()">到<input name="EDate" type="text" class="textfield" id="EDate" style="width:30%" value="" maxlength="100"  onfocus="$(this).datepick()"><br/>';
+				txt+='审核日期：从<input name="SSDate" type="text" class="textfield" id="SSDate" style="width:30%;" value="" maxlength="100"  onfocus="$(this).datepick()">到<input name="SEDate" type="text" class="textfield" id="SEDate" style="width:30%" value="" maxlength="100"  onfocus="$(this).datepick()"><br/>';
+				txt+='部门：<select id="bm" name="bm" class="textfield" style="width:30%"><option value="">全部</option><option value="三厂">三厂</option><option value="二厂">二厂</option><option value="一厂">一厂</option><option value="眼镜布绳">眼镜布绳</option><option value="花生盒">花生盒</option></select><br/>';
+				txt+='审核状态：<select id="sh" name="sh" class="textfield" style="width:30%"><option value="">全部</option><option value="0">未审核</option><option value="1">段组长审核</option><option value="2">厂长审核</option><option value="3">责任确认</option><option value="4">已执行</option></select><br/>';
+				txt+='订单号：<input id="dd" name="dd" type="text" class="textfield" style="width:30%"><br/>';
+				$.prompt(txt,{
+					buttons: { 查看: '0',导出: '1'},
+					submit:function(v,m,f){ 
+			if(v==0){
+				$("#flex1").flexOptions({newp: 1, params:[
+					{name:"sd",value:f.SDate},
+					{name:"ed",value:f.EDate},
+					{name:"ssd",value:f.SSDate},
+					{name:"sed",value:f.SEDate},
+					{name:"bm",value:f.bm},
+					{name:"dd",value:f.dd},
+					{name:"sh",value:f.sh}
+					]
+				});
+				$("#flex1").flexReload();
+				$.prompt.close();
+			}else{
+				window.open("JishiDetails.asp?print_tag=1&showType=Export&sd="+f.SDate+"&ed="+f.EDate+"&ssd="+f.SSDate+"&sed="+f.SEDate+"&bm="+encodeURI(f.bm)+"&dd="+encodeURI(f.dd)+"&sh="+f.sh,"Print","","false");
+				$.prompt.close();
+			}
+							return false; 
+					 }
+				 });
+			}			
+	}
+	
+function closead1(){
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("JishiDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+				   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+				   if(datajson.fieldValue[fieldone.id]){
+					 $('#'+fieldone.id).val(datajson.fieldValue[fieldone.id]);
+				   }
+				 }
+			   });
+				//子表信息
+				$('#t1 tr:gt(1)').remove();
+				for(var i=0;i<datajson.t1.length;i++){
+					$('#t1 tbody').append($('#t1 tr:eq(1)').clone().show());
+					$(':input',$('#t1 tbody tr:last')).each(function(n,fieldone){
+						if(datajson.t1[i][fieldone.name]){
+							fieldone.value=datajson.t1[i][fieldone.name];
+						}
+					});
+				}
+				$('#t1 tbody').append($('#t1 tr:eq(1)').clone().show());
+				$('#t2 tr:gt(1)').remove();
+				for(var i=0;i<datajson.t2.length;i++){
+					$('#t2 tbody').append($('#t2 tr:eq(1)').clone().show());
+					$(':input',$('#t2 tbody tr:last')).each(function(n,fieldone){
+						if(datajson.t2[i][fieldone.name]){
+							if(fieldone.type=='checkbox'){
+								$(fieldone).attr("checked", datajson.t2[i][fieldone.name]);
+							}
+						 else{
+							fieldone.value=datajson.t2[i][fieldone.name];
+						 }
+						 }
+					});
+				}
+				$('#t2 tbody').append($('#t2 tr:eq(1)').clone().show());
+		   }
+		 }
+	   });
+}
+function getEmp(obj){
+  if($(obj).val()=='')return false;
+	$.get("JishiDetails.asp", { showType: "getInfo",detailType: 'EmpID', InfoID: $(obj).val()},
+		function(data){
+			if(data.indexOf("###")==-1){
+				alert(data);
+				$(obj).val('');
+			}
+			else{
+				$('input[name=EmpID]',obj.parentNode.parentNode).val(data.split('###')[0]);
+				$('input[name=EmpName]',obj.parentNode.parentNode).val(data.split('###')[1]);
+				$('input[name=Danjia]',obj.parentNode.parentNode).val(data.split('###')[2]);
+				if($(':input[name=EmpID][value=""]',$(obj).parent().parent().parent()).length==1){
+					$(obj).parent().parent().parent().append($('tr:eq(1)',$(obj).parent().parent().parent()).clone().show());
+					$(':input[name=EmpID]',$('#t1 tr:last')).focus();
+				}
+			}
+		});
+}
+function getEmp2(obj){
+  if($(obj).val()=='')return false;
+	$.get("JishiDetails.asp", { showType: "getInfo",detailType: 'EmpID', InfoID: $(obj).val()},
+		function(data){
+			if(data.indexOf("###")==-1){
+				alert(data);
+				$(obj).val('');
+			}
+			else{
+				$('input[name=CheckerID]',obj.parentNode.parentNode).val(data.split('###')[0]);
+				$('input[name=Checker]',obj.parentNode.parentNode).val(data.split('###')[1]);
+				if($(':input[name=CheckerID][value=""]',$(obj).parent().parent().parent()).length==1){
+					$(obj).parent().parent().parent().append($('tr:eq(1)',$(obj).parent().parent().parent()).clone().show());
+				}
+			}
+		});
+}
+function nextInput(evt,obj){
+	if(evt.keyCode==13){
+		getEmp(obj);
+	}
+}
+function commonInput(evt,obj){
+	if(evt.keyCode==120){
+		var lie = $(obj).parent().prevAll().length;
+		var val = obj.value;
+		$("#t1").find("td").each(function(i){//搜寻表格里的每一个区间
+			if(i%13 == lie){ //'4'代表表格总共有4列，如果区间编号被4整除，那么它就属于第一列
+			$('input',this).val(obj.value);}//给区间加上特定样式
+		});
+	}
+}
+
+
+function toSubmit(obj){
+	if($('#Bumen').val()==''){alert('部门不能为空！');return false;}
+	if($('#RegDate').val()==''){alert('申请日期不能为空！');return false;}
+	var zeroflag=false;
+	$("tr:gt(1)",$('#t1')).each(function(i,fieldone){
+			if($(':input[name=EmpID]',$(fieldone)).val()!=''&&($(':input[name=Shijian]',$(fieldone)).val()=='0'||$(':input[name=Shijian]',$(fieldone)).val()=='')){
+				zeroflag=true;
+			}
+			if($(':input[name=ReasonType]',$(fieldone)).val()==''&&$(':input[name=EmpID]',$(fieldone)).val()!=''&&$(':input[name=Shijian]',$(fieldone)).val()!='0'){
+				zeroflag=true;
+			}
+		});
+	if(zeroflag){
+		alert('计时类别不能为空，请检查！');
+		return false;
+	}
+	obj.disabled = true;
+	$.post('JishiDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+		if(data.indexOf("成功")>-1) $("#flex1").flexReload();
+		alert(data);
+		obj.disabled = false;
+	});
+	$("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+function MycheckNum(obj){
+	if(checkNum(obj)){
+		$('input[name=Jine]',obj.parentNode.parentNode).val(parseFloat($(obj).val())*parseFloat($('input[name=Danjia]',obj.parentNode.parentNode).val()));
+	}
+}
+function setAotu(obj){
+	$(obj).unautocomplete();
+	$(obj).autocomplete("JishiDetails.asp?showType=getInfo&detailType=OrderID", {
+		minChars:3,
+		max:10,
+		width:200,
+		height:200,
+		mustMatch: true,
+		matchContains:true,
+		autoFill:true,
+		formatItem: function(row,i,max) {
+			return row[0];
+		},
+		formatResult: function(row, value) {
+			return row[0];
+		}
+	});
+}
+function setAotu2(obj){
+	$(obj).unautocomplete();
+	$(obj).autocomplete("JishiDetails.asp?showType=getInfo&detailType=Product&OrderID="+encodeURI($(':input[name=OrderID]',obj.parentNode.parentNode).val()), {
+		minChars:0,
+		max:10,
+		width:200,
+		height:200,
+		mustMatch: true,
+		matchContains:true,
+//		autoFill:true,
+		formatItem: function(row,i,max) {
+			return row[0];
+		},
+		formatResult: function(row, value) {
+			return row[0];
+		}
+	});
+}
+function setAotu3(obj){
+	$(obj).unautocomplete();
+	$(obj).autocomplete("JishiDetails.asp?showType=getInfo&detailType=ReasonType", {
+		minChars:0,
+		max:20,
+		width:200,
+		height:200,
+		mustMatch: true,
+		matchContains:true,
+//		autoFill:true,
+		formatItem: function(row,i,max) {
+			return row[0];
+		},
+		formatResult: function(row, value) {
+			return row[0];
+		}
+	});
+}
+function Delete(obj,t){
+	var detailsNo=$(':input[name*=SerialNumD]',obj.parentNode.parentNode).val();
+	var No=$('#SerialNum').val();
+	if(detailsNo=='' || No=='')$(obj).parent().parent().remove();
+	else{
+		$.post('JishiDetails.asp?showType=DataProcess&detailType=DeleteDetails',{"No":No,"SerialNum":detailsNo,"Type":t},function(data){
+		if(data.indexOf("成功")>-1)$(obj).parent().parent().remove();
+		else alert(data);
+		});
+	}
+}
+function CheckOne(obj){
+	var detailsNo=$(':input[name=SerialNumD2]',obj.parentNode.parentNode).val();
+	var No=$('#SerialNum').val();
+	if(detailsNo=='' || No=='')alert('未保存无需审核！');
+	else{
+		var txt='审核意见： <textarea name="CheckText" id="CheckText" style="width:90%; height:100px; " class="textfield"></textarea>';
+		$.prompt(txt,{
+			buttons: { 同意: 'Agree',不同意:'Disagree',取消确认:'Uncheck' },
+			submit:function(v,m,f){ 
+				$.post('JishiDetails.asp?showType=DataProcess&detailType=CheckDetails',{"No":No,"SerialNum":detailsNo,"Type":v,"CheckText":f.CheckText},function(data){
+					alert(data);
+					if(data.indexOf("成功")>-1){
+						if(v=='Agree'){
+							$(':input[name=Tongyi]',obj.parentNode.parentNode).attr('checked',true);
+							$(':input[name=Shuoming]',obj.parentNode.parentNode).val(f.CheckText);
+							$(':input[name=CheckDate]',obj.parentNode.parentNode).val(Date());
+						}
+						else if(v=='Disagree'){
+							$(':input[name=Butongyi]',obj.parentNode.parentNode).attr('checked',true);
+							$(':input[name=Shuoming]',obj.parentNode.parentNode).val(f.CheckText);
+							$(':input[name=CheckDate]',obj.parentNode.parentNode).val(Date());
+						}
+						else if(v=='Uncheck'){
+							$(':input[name=Tongyi]',obj.parentNode.parentNode).attr('checked',false);
+							$(':input[name=Butongyi]',obj.parentNode.parentNode).attr('checked',false);
+							$(':input[name=Checker]',obj.parentNode.parentNode).val();
+							$(':input[name=CheckDate]',obj.parentNode.parentNode).val();
+						}
+						$("#flex1").flexReload();
+					}
+				});
+				$.prompt.close();
+				return false; 
+			 }
+		 });
+	}
+}
+
+
+var zTree1;
+var setting;
+var rMenu;
+	setting = {
+		checkable: true,
+		checkType : {"Y":"ps", "N":"ps"},
+		expandSpeed:"",
+		keepParent: false,
+		keepLeaf: false,
+		isSimpleData : true,
+		treeNodeParentKey : "PSNum",
+		treeNodeKey : "SerialNum",
+		rootPID : 0,
+		async: true,
+		asyncUrl: "JishiDetails.asp",
+		asyncParam: ["SerialNum"],
+		asyncParamOther : {"showType":"getInfo","detailType":"Users"},
+		callback: {
+			beforeExpand: zTreeBeforeExpand
+//			rightClick: zTreeOnRightClick
+		}
+	};
+	function zTreeBeforeExpand(treeId, treeNode) {
+		zTree1.expandAll(false);
+	}
+	function refreshTree() {
+		var nodes = [];
+		setting.async = true;
+		zTree1 = $("#Users").zTree(setting, nodes);
+	}
+
+function InsertUser(){
+	var tmp = zTree1.getCheckedNodes();
+	for (var i=0; i<tmp.length; i++) {
+		if(tmp[i].val1!=''){
+			$('#t1 tbody').append($('#t1 tr:eq(1)').clone().show());
+			$('input[name=EmpID]',$('#t1 tbody tr:last')).val(tmp[i].val);
+			$('input[name=EmpName]',$('#t1 tbody tr:last')).val(tmp[i].val1);
+			$('input[name=Danjia]',$('#t1 tbody tr:last')).val(tmp[i].Price);
+		}
+	}
+	$('#AddDetailDiv').hide();
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>员工计时单</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" nowrap bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id=editNews>
+      <tr>
+        <td height="20" align="left" width="10%">单据号：</td>
+        <td WIDTH='15%'>
+		<input name="SerialNum" type="text" class="textfield" id="SerialNum" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">日期：</td>
+        <td WIDTH='15%'><input name="RegDate" type="text" class="dateISO required textfield" id="RegDate"  value="" maxlength="100"  onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})"></td>
+        <td height="20" align="left" width="10%">部门：</td>
+        <td  WIDTH='15%'><select id="Bumen" name="Bumen" class="textfield">
+		  <option value="" ></option>
+		  <option value="一厂" >一厂</option>
+		  <option value="二厂" >二厂</option>
+		  <option value="三厂" >三厂</option>
+		  <option value="眼镜布绳" >眼镜布绳</option>
+		  <option value="花生盒" >花生盒</option>
+		</select>
+    </td>
+        <td height="20" align="left" width="10%"></td>
+        <td  WIDTH='15%'></td>
+      </tr>
+      <tr >
+        <td colspan="8">
+	 <fieldset><legend>备注：</legend>
+	  <textarea name="Remark" id="Remark" style="width:90%; height:50px; font-size:12px;"></textarea></fieldset>
+	  </td>
+      </tr>
+      <tr>
+        <td height="20" colspan="8">
+<ul class="css-tabs">
+	<li><a href="#">计时员工</a></li>
+	<li><a href="#">责任会签</a></li>
+</ul>
+<!-- panes -->
+<div class="css-panes">
+	<div>
+<table cellpadding="0" cellspacing="1" bgcolor="#99BBE8" id="t1">
+<tbody>
+		  <tr>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>工号</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>姓名</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>订单号</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>产品型号</strong></font></td>
+			<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>计时类别</strong></font></td>
+			<td width="20%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>计时原因</strong></font></td>
+			<td width="5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>开始时间</strong></font></td>
+			<td width="5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>结束时间</strong></font></td>
+			<td width="5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>总计/小时</strong></font></td>
+			<td width="5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>完成数量</strong></font></td>
+			<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>单价/小时</strong></font></td>
+			<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>金额</strong></font></td>
+			<td width="4%" bgcolor="#8DB5E9"><strong><font color="#FFFFFF">操作</font></strong></td>
+		  </tr>
+		  <tr bgColor="#EBF2F9" id="CloneNodeTr" style="display:none;" >
+			<td><input type="hidden" name="SerialNumD" /><input type="text" name="EmpID" class="textdetail" onblur="getEmp(this)" onkeydown="nextInput(event,this)"/></td>
+			<td><input type="text" name="EmpName" class="textdetail"/></td>
+			<td><input type="text" name="OrderID" class="textdetail" onkeydown="commonInput(event,this)" onfocus="setAotu(this)"/></td>
+			<td><input type="text" name="Product" class="textdetail" onkeydown="commonInput(event,this)" onfocus="setAotu2(this)"/></td>
+			<td><input type="text" name="ReasonType" class="textdetail" onkeydown="commonInput(event,this)" onfocus="setAotu3(this)"/></td>
+			<td><input type="text" name="Reason" class="textdetail" onkeydown="commonInput(event,this)"/></td>
+			<td><input type="text" name="StartTime" class="textdetail" onfocus="$(this).setTime()" onkeydown="commonInput(event,this)"/></td>
+			<td><input type="text" name="EndTime" class="textdetail" onfocus="$(this).setTime()" onkeydown="commonInput(event,this)"/></td>
+			<td><input type="text" name="Shijian" class="number textdetail" value="0" onkeydown="commonInput(event,this)" onblur="return MycheckNum(this)"/></td>
+			<td><input type="text" name="Wancheng" class="number textdetail" value="0" onblur="return checkNum(this)" onkeydown="commonInput(event,this)"/></td>
+			<td><input type="text" name="Danjia" class="number textdetail" value="0" readonly="readonly"/></td>
+			<td><input type="text" name="Jine" class="number textdetail" value="0" readonly="readonly"/></td>
+			<td align="left"><input type="button" onClick="Delete(this,'t1')" style="background:no-repeat center url(../Images/delete.gif);width:20px; height:20px;" class="button"/>
+      <input type="hidden" name="DeleteFlag" id="DeleteFlag" value="0">
+      </td>
+		  </tr>
+</tbody>
+</table>
+ 	</div>
+	<div>
+<table cellpadding="0" cellspacing="1" bgcolor="#99BBE8" id="t2">
+<tbody>
+<tr>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>责任部门</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>工号</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>姓名</strong></font></td>
+<td width="16%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>意见</strong></font></td>
+<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>同意</strong></font></td>
+<td width="4%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>不同意</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>审核时间</strong></font></td>
+<td width="6%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>操作</strong></font></td>
+</tr>
+<tr bgColor="#EBF2F9" style="display:none">
+<td><input type="hidden" name="SerialNumD2"/>
+<select id="Zerenbume" name="Zerenbume" class="textfield">
+		  <option value="" ></option>
+		  <option value="一厂" >一厂</option>
+		  <option value="二厂" >二厂</option>
+		  <option value="三厂" >三厂</option>
+		  <option value="眼镜布绳" >眼镜布绳</option>
+		  <option value="花生盒" >花生盒</option>
+		  <option value="采购部" >采购部</option>
+		  <option value="管理部" >管理部</option>
+		  <option value="营销部" >营销部</option>
+		  <option value="品管部" >品管部</option>
+		  <option value="工程部" >工程部</option>
+		  <option value="仓储科" >仓储科</option>
+		  <option value="生产中心" >生产中心</option>
+		  <option value="金乡" >金乡</option>
+		</select></td>
+<td><input type="text" name="CheckerID" class="textdetail" onblur="getEmp2(this)"/></td>
+<td><input type="text" name="Checker" class="textdetail" readonly="readonly"/></td>
+<td><input type="text" name="Shuoming" class="textdetail" readonly="readonly"/></td>
+<td><input type="checkbox" value="1" name="Tongyi" onclick="return this.checked = !this.checked"/></td>
+<td><input type="checkbox" value="1" name="Butongyi" onclick="return this.checked = !this.checked"/></td>
+<td><input type="text" name="CheckDate" class="textfield" readonly="readonly"/></td>
+<td align="left"><input type="button" onClick="Delete(this,'t2')" style="background:no-repeat center url(../Images/delete.gif);width:20px; height:20px;" class="button"/>
+<input type="button" onClick="CheckOne(this)" style="background:no-repeat center url(../Images/checked.gif); width:20px; height:20px;" title="点击进行审核"/>
+</td>
+</tr>
+</tbody>
+</table>
+	</div>
+</div>
+		</td>
+      </tr>
+      <tr><td colspan="8"><HR style="margin-top:0; margin-bottom:0"/>
+</td>
+      </tr>
+	<tr bgcolor="#99BBE8">
+	  <td align="center" colspan="8" height="24">
+	  <input type="hidden" name="CheckFlag" id="CheckFlag" value="">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+    <input type="button" class="button"  value="筛选" title="选择整个操作工组的人员时，请先展开部门再选入！" style="WIDTH: 80;" onClick="$('#AddDetailDiv').show();refreshTree();">&nbsp;
+			<input name="submitSaveAdd" type="button" class="submit button"  value="保存" style="WIDTH: 80;" onclick="toSubmit(this)">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;" onClick="javascript:closead1()">&nbsp;
+	  </td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+</div>
+<div id="AddDetailDiv" style="position:absolute;width:'70%';height:'30%';top:10%;left:10%;background:#E8EFFF;border:1px solid #99BBE8;border-width:1px 1px 1px 1px;overflow:auto;opacity:0.8;display:none;z-index:600">
+&nbsp;&nbsp;<input type="button" value="关闭" class="button" style="background-color:#09F" onclick="$('#AddDetailDiv').hide()" />&nbsp;
+<input type="button" value="选入" class="button" style="background-color:#09F" onclick="InsertUser()" />
+<ul id="Users" class="tree"></ul>
+</div>
+
+<div id="listDiv" style="width:100%;top:0;left:20;display:none;background-color:#ffffff;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-x:hidden; overflow-y:scroll; z-index:550">
+</div>
+</BODY>
+</HTML>

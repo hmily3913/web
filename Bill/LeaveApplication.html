@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$('#RegDate').datepick({dateFormat: 'yyyy-mm-dd'});
+	$("#AddForm").validate({
+		submitHandler:function(form){
+			$.post('LeaveApplicationDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+				if(data.indexOf("###")==-1) alert(data);
+			else $("#flex1").flexReload();
+			});
+			$("#addDiv").hide("slow");
+			$("#addDiv").css("z-index","500");
+		}
+	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'LeaveApplicationDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '单号', name : 'SerialNum', width : 50, sortable : true, align: 'left'},
+	{display: '申请人', name : 'RegisterName', width : 50, sortable : true, align: 'left'},
+	{display: '申请日期', name : 'RegDate', width : 50, sortable : true, align: 'left'},
+	{display: '部门', name : 'Departmentname', width : 50, sortable : true, align: 'left'},
+	{display: '入职时间', name : 'InDate', width : 50, sortable : true, align: 'left'},
+	{display: '岗位', name : 'Position', width : 50, sortable : true, align: 'left'},
+	{display: '职等', name : 'Grade', width : 40, sortable : true, align: 'left'},
+	{display: '科室工段', name : 'SubDepart', width : 50, sortable : true, align: 'left'},
+	{display: '离职原因', name : 'LeaveReason', width : 200, sortable : true, align: 'left'},
+	{display: '审核状态', name : 'CheckFlag', width : 40, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '审核',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '单号', name : 'SerialNum', isdefault: true},
+		{display: '申请人', name : 'RegisterName'},
+		{display: '申请部门', name : 'Departmentname'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: true,
+	striped:false,//
+	usepager: true,
+	title: '离职意向申请表',
+	showTableToggleBtn: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		getInfo('SerialNum');
+		$("#addDiv").show("slow");
+		$('#editNews tr:gt(4)').show();
+		$('#detailType').val('Edit');
+	}
+	
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要删除单号为：' + SNum + ' 的记录?')){
+				  $.post('LeaveApplicationDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#detailType').val('AddNew');
+				var yestoday=showdate(0);
+				$('#RegDate').val(yestoday);
+				$("#addDiv").show("slow");
+				$('#editNews tr:gt(4)').hide();
+			}			
+		else if (com=='维护')
+			{
+				$('#AddForm').resetForm();
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				$('#SerialNum').val($('.trSelected', grid).attr("id").replace("row",""));
+				getInfo('SerialNum');
+				$("#addDiv").show("slow");
+				$('#editNews tr:gt(4)').show();
+				$('#detailType').val('Edit');
+			}			
+		else if (com=='审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+			var txt='审核意见：<textarea name="operattext" id="operattext" style="width:200px;height:100px;"></textarea>';
+				$.prompt(txt,{
+					buttons: { 同意: 'Check', 驳回: 'unCheck' },
+					submit:function(v,m,f){ 
+							$.post('LeaveApplicationDetails.asp',{
+								showType:'DataProcess',
+								detailType:v,
+								SerialNum:SNum,
+								operattext:f.operattext
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+							return false; 
+					 }
+				 });
+			}			
+	}
+function closead1(){
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("LeaveApplicationDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+					   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+					   if(datajson.fieldValue[0][fieldone.id])
+					     $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+					 }
+			   });
+		   }
+		   else if(obj=="Register"){
+		   $("#Register").val(data.split('###')[0]);
+		   $("#RegisterName").val(data.split('###')[1]);
+		   $("#Department").val(data.split('###')[2]);
+		   $("#Departmentname").val(data.split('###')[3]);
+		   $("#Position").val(data.split('###')[5]);
+		   $("#EntryDate").val(data.split('###')[6]);
+		   $("#Grade").val(data.split('###')[7]);
+		   }
+		 }
+	   });
+}
+
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>离职意向申请表</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" nowrap bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id=editNews>
+      <tr>
+        <td height="20" align="left" width="10%">单据号：</td>
+        <td WIDTH='15%'>
+		<input name="SerialNum" type="text" class="textfield" id="SerialNum" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">员工编号：</td>
+        <td  WIDTH='15%'><input name="Register" type="text" class="required textfield" style="width:90%" id="Register" value="" maxlength="100" onBlur="getInfo('Register')"></td>
+        <td height="20" align="left" width="10%">员工姓名：</td>
+        <td  WIDTH='15%'><input name="RegisterName" type="text" class="textfield" id="RegisterName" value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left" width="10%">入职日期：</td>
+        <td  WIDTH='15%'><input name="EntryDate" type="text" class="textfield" id="EntryDate" value="" maxlength="100"  readonly="true"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">职等：</td>
+        <td>
+		<input name="Grade" type="text" class="textfield" id="Grade" value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">部门编号：</td>
+        <td><input name="Department" type="text" class="textfield" id="Department" value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">部门名称：</td>
+        <td><input name="Departmentname" type="text" class="textfield" id="Departmentname"  value="" maxlength="100"  readonly="true"></td>
+        <td height="20" align="left">工种：</td>
+        <td><input name="Position" type="text" class="textfield" id="Position"  value="" maxlength="100"  readonly="true"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">科室工段：</td>
+        <td><input name="SubDepart" type="text" class="textfield" id="SubDepart"  value="" maxlength="100"></td>
+        <td height="20" align="left">提出时间：</td>
+        <td><input name="RegDate" type="text" class="dateISO required textfield" id="RegDate"  value="" maxlength="100"></td>
+				<td colspan="4"></td>
+      </tr>
+      <tr >
+        <td height="80" align="left">离职原因：</td>
+        <td colspan="7">
+	  <textarea name="LeaveReason" id="LeaveReason" style="width:90%; height:80px; "></textarea>
+	  </td>
+      </tr>
+	<tr bgcolor="#99BBE8">
+	  <td align="center" colspan="8">
+	  <input type="hidden" name="CheckFlag" id="CheckFlag" value="">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input name="submitSaveAdd" type="submit" class="submit button"  value="保存" style="WIDTH: 80;">&nbsp;
+	  </td>
+	</tr>
+	<tr >
+		<td height="80" align="left">主管确认：</td>
+		<td colspan="7">
+		<textarea name="DepartReplyText" id="DepartReplyText" style="width:90%; height:80px; "></textarea>
+		</td>
+	</tr>
+	<tr >
+		<td height="20" align="left"></td>
+		<td></td>
+		<td align="left">确认人：</td>
+		<td><input name="DepartReplyer" type="text" class="textfield" id="DepartReplyer"  value="" maxlength="100"  readonly="true"></td>
+		<td align="left">确认时间：</td>
+		<td><input name="DepartReplyDate" type="text" class="textfield" id="DepartReplyDate"  value="" maxlength="100"  readonly="true"></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr >
+		<td height="80" align="left">人资确认：</td>
+		<td colspan="7">
+		<textarea name="RelatedReplyText" id="RelatedReplyText" style="width:90%; height:80px; "></textarea>
+		</td>
+	</tr>
+	<tr >
+		<td height="20" align="left"></td>
+		<td></td>
+		<td align="left">确认人：</td>
+		<td><input name="RelatedReplyer" type="text" class="textfield" id="RelatedReplyer"  value="" maxlength="100"  readonly="true"></td>
+		<td align="left">确认时间：</td>
+		<td><input name="RelatedReplyDate" type="text" class="textfield" id="RelatedReplyDate"  value="" maxlength="100"  readonly="true"></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr >
+		<td height="80" align="left">副总确认：</td>
+		<td colspan="7">
+		<textarea name="VPReplyText" id="VPReplyText" style="width:90%; height:80px; "></textarea>
+		</td>
+	</tr>
+	<tr >
+		<td height="20" align="left"></td>
+		<td></td>
+		<td align="left">确认人：</td>
+		<td><input name="VPReplyer" type="text" class="textfield" id="VPReplyer"  value="" maxlength="100"  readonly="true"></td>
+		<td align="left">确认时间：</td>
+		<td><input name="VPReplyDate" type="text" class="textfield" id="VPReplyDate"  value="" maxlength="100"  readonly="true"></td>
+		<td></td>
+		<td></td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+</div>
+</BODY>
+</HTML>

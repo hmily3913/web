@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/AdvSearch.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+#QueryTable{
+	border-color: -moz-use-text-color #CCCCCC #CCCCCC;
+	border-right: 1px solid #CCCCCC;
+	border-leftt: 1px solid #CCCCCC;
+	border-style: none solid solid;
+	border-width: 0 1px 1px;
+}
+</style>
+</head>
+<body>
+<table width="100%" id="QueryTable" style="border: 1px solid #99BBE8;"></table>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+QueryArea=[{name:'扣款日期',value:'a.Fdate',type:3},
+{name:'供应商',value:'e.FName'},
+{name:'物料编号',value:'f.fnumber'},
+{name:'物料名称',value:'f.fName'},
+{name:'处置结果',value:'d.FDefectHandlingID',Content:[{CValue:'1036',title:'拒收'},{CValue:'1077',title:'让步接收'}]},
+{name:'扣款金额',value:'b.famount',type:1}
+];
+function doSearch(){
+		$("#flex1").flexOptions({newp: 1, params:[
+			{name:"AllQuery",value:$('#AllQuery').val()}]
+		});
+		$("#flex1").flexReload();
+}
+$(function(){
+	AdvSearch();
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'IQCDeductionDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '扣款日期', name : 'n0', width : 60, sortable : true, align: 'left'},
+	{display: '供应商代码', name : 'n1', width : 60, sortable : true, align: 'left'},
+	{display: '供应商名称', name : 'n10', width : 150, sortable : true, align: 'left'},
+	{display: '物料编号', name : 'n2', width : 60, sortable : true, align: 'left'},
+	{display: '物料名称', name : 'n11', width : 80, sortable : true, align: 'left'},
+	{display: '订单号', name : 'n12', width : 60, sortable : true, align: 'left'},
+	{display: '物料分类', name : 'n3', width : 60, sortable : true, align: 'left'},
+	{display: '进料数量', name : 'n4', width : 50, sortable : true, align: 'left'},
+	{display: '不合格数量', name : 'n5', width : 50, sortable : true, align: 'left'},
+	{display: '不合格原因', name : 'n6', width : 50, sortable : true, align: 'left'},
+	{display: '处置结果', name : 'n7', width : 60, sortable : true, align: 'left'},
+	{display: '扣款金额', name : 'n8', width : 50, sortable : true, align: 'left'},
+	{display: '扣款单号', name : 'n9', width : 60, sortable : true, align: 'left'}
+		],
+	striped:true,//
+	usepager:false,
+	autoload: true,
+	rp: 20,
+	usepager: true,
+	title: 'IQC扣款记录查询',
+	showTableToggleBtn: true,
+	width:'100%',
+	height: 450
+	}
+	);
+	
+</script>
+
+</BODY>
+</HTML>

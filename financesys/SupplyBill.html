@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<link rel="stylesheet" href="../Images/jquery.autocomplete.css">
+<script language="javascript" src="../Script/jquery.autocomplete.pack.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+var LDCtmList,YHCtmList,EmpList;
+var AutooptionCtms={
+	minChars:1,
+	max:20,
+	width:250,
+	mustMatch: false,
+	matchContains:true,
+	dataType: "json",
+	parse: function(data) {
+		return $.map(data, function(row) {
+			return {
+				data: row,
+				value: row.ClientName,
+				result: row.ClientName
+			}
+		});
+	},
+	formatItem:function(row,i,max){
+		return row.ClientName+' ['+row.FNumber+']';
+	},
+	formatMatch:function(row,i,max){return row.ClientName+' '+row.FNumber;},
+	formatResult:function(row){return row.ClientName;}
+};
+function initEmpAuto(obj){
+	$(obj).autocomplete(EmpList,AutooptionCtms);
+}
+function initAutoComplete(){
+	$('#Custom').focus().autocomplete('SupplyBillDetails.asp?showType=getInfo&detailType=getCtmsLD',AutooptionCtms);
+	$('#Custom').result(function(event,data,formatted){if(data)$('#Employer').val(data.Emp)});
+	$('#Supplier').focus().autocomplete('SupplyBillDetails.asp?showType=getInfo&detailType=Supplier',AutooptionCtms);
+	$('#Supplier').result(function(event,data,formatted){if(data)$('#InvoiceCode').val(data.FNumber)});
+}
+$(function(){
+	$.getJSON('SupplyBillDetails.asp?showType=getInfo&detailType=getEmp',null,function(data){EmpList=data;});
+	initAutoComplete()
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+	$("#AddForm").validate({
+		submitHandler:function(form){
+			$.post('SupplyBillDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+				if(data.indexOf("###")==-1) alert(data);
+			else $("#flex1").flexReload();
+			});
+			$("#addDiv").hide("slow");
+			$("#addDiv").css("z-index","500");
+		}
+	});
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'SupplyBillDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '序号', name : 'SerialNum', width : 30, sortable : true, align: 'left',hide:true,toggle:false},
+	{display: '开票日期', name : 'CountDate', width : 60, sortable : true, align: 'left'},
+	{display: '序号', name : 'No', width : 60, sortable : true, align: 'left'},
+	{display: '货款归属单位', name : 'Paymentattr', width : 30, sortable : true, align: 'left'},
+	{display: '采购员', name:'Employer',width : 50, sortable : true, align: 'left'},
+	{display: '供方名称', name : 'Custom', width : 80, sortable : true, align: 'left'},
+	{display: '发票开具单位', name : 'Supplier', width : 80, sortable : true, align: 'left'},
+	{display: '发票代码', name : 'InvoiceCode', width : 100, sortable : true, align: 'left'},
+	{display: '发票号码', name : 'Invoice', width : 100, sortable : true, align: 'left'},
+	{display: '货物名称', name : 'Product', width : 60, sortable : true, align: 'left'},
+	{display: '数量', name : 'Quality', width : 50, sortable : true, align: 'left'},
+	{display: '单位', name : 'Unit', width : 40, sortable : true, align: 'left'},
+	{display: '单价', name : 'Price', width : 50, sortable : true, align: 'left'},
+	{display: '金额', name : 'Money', width : 50, sortable : true, align: 'left'},
+	{display: '税率', name : 'Tariff', width : 50, sortable : true, align: 'left'},
+	{display: '税额', name : 'Tax', width : 50, sortable : true, align: 'left'},
+	{display: '价税合计', name : 'Total', width : 50, sortable : true, align: 'left'},
+	{display: '备注', name : 'Remark', width : 80, sortable : true, align: 'left'},
+	{display: '付款方式', name : 'Payment', width : 60, sortable : true, align: 'left'},
+	{display: '预付款', name : 'Advance', width : 60, sortable : true, align: 'left'},
+	{display: '购销合同', name : 'Contract', width : 60, sortable : true, align: 'left'},
+	{display: '付款日期', name : 'PayDate', width : 60, sortable : true, align: 'left'},
+	{display: '付款金额', name : 'PayMoney', width : 60, sortable : true, align: 'left'},
+	{display: '审核', name : 'CheckFlag', width : 60, sortable : true, align: 'left'},
+	{display: '记账', name : 'AccountFlag', width : 60, sortable : true, align: 'left'},
+	{display: '认证', name : 'ApprovFlag', width : 60, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '审核',  onpress : test},
+		{separator: true},
+		{name: '记账',  onpress : test},
+		{separator: true},
+		{name: '认证',  onpress : test},
+		{separator: true},
+		{name: '导出',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '货款归属', name : 'Paymentattr', isdefault: true},
+		{display: '开票日期', name : 'CountDate'},
+		{display: '供方名称', name : 'Custom'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: false,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '供方开票管理',
+	showTableToggleBtn: true,
+	showcheckbox: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$(':input[name=CountDate]',$('#AddForm')).val($(rowData).data("CountDate"));
+		$(':input[name=No]',$('#AddForm')).val($(rowData).data("No"));
+		$(':input[name=Paymentattr]',$('#AddForm')).val($(rowData).data("Paymentattr"));
+		$(':input[name=Supplier]',$('#AddForm')).val($(rowData).data("Supplier"));
+		$(':input[name=Employer]',$('#AddForm')).val($(rowData).data("Employer"));
+		$(':input[name=Custom]',$('#AddForm')).val($(rowData).data("Custom"));
+		$(':input[name=InvoiceCode]',$('#AddForm')).val($(rowData).data("InvoiceCode"));
+		$(':input[name=Invoice]',$('#AddForm')).val($(rowData).data("Invoice"));
+		$('#TbDetails tr:gt(1)').remove();
+		$('#TbDetails').append($('#CloneNodeTr').clone().show());
+	 $(':input',$('#TbDetails tr:last')).each(function(i,fieldone){
+		 if(fieldone.name){
+			 if(fieldone.name!='DeleteFlag')
+			 	fieldone.value=$(rowData).data((fieldone.name));
+		 }
+	 });
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('SupplyBillDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":AllSNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				$('#detailType').val('AddNew');
+				$('#TbDetails tr:gt(1)').remove();
+				$("#addDiv").show("slow");
+			}			
+		else if (com=='导出'){
+				var txt='日期：从<input name="SDate" type="text" class="textfield" id="SDate" style="width:30%;" value="" maxlength="100"  onfocus="$(this).datepick()">到<input name="EDate" type="text" class="textfield" id="EDate" style="width:30%" value="" maxlength="100"  onfocus="$(this).datepick()"><br/><br/>';
+				txt+='<select name="Paymentattr" id="Paymentattr" class="textfield" style="width:20%">';
+				txt+='<option value=""></option>';
+				txt+='<option value="LD">LD</option>';
+				txt+='<option value="YH">YH</option>';
+				txt+='</select>';
+				$.prompt(txt,{
+					buttons: { 页面查看: 'webLook',导出: 'outprint' },
+					submit:function(v,m,f){ 
+						if(v=='webLook'){
+							$('#listDiv').load("SupplyBillDetails.asp #listtable",{
+								showType:'Excel',
+								Paymentattr:f.Paymentattr,
+								EDate:f.EDate,
+								SDate:f.SDate
+							 },function(response, status, xhr){
+								if (status =="success") {
+									$.prompt.close();
+									$("#listDiv").show("slow");
+								}	
+							});
+						}
+						if(v=='outprint'){
+							window.open("SupplyBillDetails.asp?showType=Excel&print_tag=1&Company="+f.Company+"&SDate="+f.SDate+"&EDate="+f.EDate,"Print","","false");
+							$.prompt.close();
+						}
+						return false; 
+					 }
+				 });
+		}
+		else if (com=='审核'){
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				$.prompt('',{
+					buttons: { 审核: '1',驳回: '0' },
+					submit:function(v,m,f){ 
+							$.post('SupplyBillDetails.asp',{
+								showType:'DataProcess',
+								detailType:'Check',
+								SerialNum:AllSNum,
+								operattext:v
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+						return false; 
+					 }
+				 });
+		}
+		else if (com=='记账'){
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				$.prompt('',{
+					buttons: { 记账: '1',驳回: '0' },
+					submit:function(v,m,f){ 
+							$.post('SupplyBillDetails.asp',{
+								showType:'DataProcess',
+								detailType:'Account',
+								SerialNum:AllSNum,
+								operattext:v
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+						return false; 
+					 }
+				 });
+		}
+		else if (com=='认证'){
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				$.prompt('',{
+					buttons: { 认证: '1',驳回: '0' },
+					submit:function(v,m,f){ 
+							$.post('SupplyBillDetails.asp',{
+								showType:'DataProcess',
+								detailType:'Approv',
+								SerialNum:AllSNum,
+								operattext:v
+							 },function(data){
+								alert(data);
+								if(data.indexOf('成功')>0)$("#flex1").flexReload();
+							});
+							$.prompt.close();
+						return false; 
+					 }
+				 });
+		}
+	}
+
+function ctMoney(obj){
+	if($('[name=Quality]',obj.parentNode.parentNode).val()!=""&&$('[name=Price]',obj.parentNode.parentNode).val()!=""){
+		var totalMoney=Math.round(parseFloat($('[name=Price]',obj.parentNode.parentNode).val())*parseFloat($('[name=Quality]',obj.parentNode.parentNode).val())*100)/100;
+		$('[name=Money]',obj.parentNode.parentNode).val(totalMoney);
+		var Tax=Math.round(totalMoney*parseFloat($('[name=Tariff]',obj.parentNode.parentNode).val()))/100;
+		$('[name=Tax]',obj.parentNode.parentNode).val(Tax);
+		$('[name=Total]',obj.parentNode.parentNode).val(Tax+totalMoney);
+	}
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;overflow:auto;">
+ <form id="AddForm" name="AddForm" style="margin:50; padding:0;">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" colspan="8" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="$('#addDiv').hide('slow').css('z-index','500');" >&nbsp;<strong>供方开票管理</strong></font></td>
+  </tr>
+  <tr bgcolor="#EBF2F9">
+  <td width="10%">开票日期：</td>
+  <td width="10%"><input type="text" name="CountDate" class="dateISO textfield" onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})"/></td>
+  <td width="10%">序号：</td>
+  <td width="15%"><input type="text" name="No" class="textfield" readonly="readonly"/></td>
+  <td width="10%">货款归属单位：</td>
+  <td width="15%"><select name="Paymentattr" class="required textfield">
+      <option value="LD">LD</option>
+      <option value="YH">YH</option>
+      <option value="LC">LC</option>
+      </select></td>
+  <td width="10%">供应商：</td>
+  <td width="15%"><input type="text" name="Custom" id="Custom" class="required textfield"/></td>
+  </tr>
+  <tr bgcolor="#EBF2F9">
+  <td>采购员：</td>
+  <td><input type="text" name="Employer" class="required textfield" onfocus="initEmpAuto(this)"/></td>
+  <td>发票开具单位：</td>
+  <td><input type="text" name="Supplier" class="required textfield"/></td>
+  <td>发票代码：</td>
+  <td><input type="text" name="InvoiceCode" class="required textfield"/></td>
+  <td>发票号码：</td>
+  <td><input type="text" name="Invoice" class="required textfield"/></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9" colspan="8">
+		<table width="100%" border="0" id="editDetails" cellpadding="3" cellspacing="1" bgcolor="#99BBE8" style=" overflow:auto">
+		  <tbody id="TbDetails">
+		  <tr>
+			<td width="120" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>货物名称</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>数量</strong></font></td>
+			<td width="40" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>单位</strong></font></td>
+			<td width="50" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>单价(不含税)</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>金额(不含税)</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>税率</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>税额</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>价税合计</strong></font></td>
+			<td width="100" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>备注</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>付款方式</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>预付款</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>购销合同</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>付款日期</strong></font></td>
+			<td width="60" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>付款金额</strong></font></td>
+			<td width="40" bgcolor="#8DB5E9"><strong><font color="#FFFFFF">操作</font></strong></td>
+		  </tr>
+		  <tr bgColor="#EBF2F9" id="CloneNodeTr" style="display:none;" >
+			<td><input type="hidden" name="SerialNum" /><input type="text" name="Product" class="textfield"/></td>
+			<td><input type="text" name="Quality" class="number textfield" onblur="return ctMoney(this)" value="0"/></td>
+			<td><input type="text" name="Unit" class="textfield"/></td>
+			<td><input type="text" name="Price" class="number textfield" value="0" onblur="return ctMoney(this)"/></td>
+			<td><input type="text" name="Money" class="number textfield" value="0"/></td>
+			<td><select name="Tariff" class="textfield" onchange="return ctMoney(this)">
+      <option value="17">17</option>
+      <option value="13">13</option>
+      <option value="7">7</option>
+      <option value="6">6</option>
+      <option value="3">3</option>
+      </select></td>
+			<td><input type="text" name="Tax" class="number textfield" value="0" onblur="return ctMoney(this)"/></td>
+			<td><input type="text" name="Total" class="number textfield" value="0" onblur="return ctMoney(this)"/></td>
+			<td><input type="text" name="Remark" class="textfield"/></td>
+			<td><select name="Payment" class="textfield">
+      <option value=""></option>
+      <option value="转账">转账</option>
+      <option value="现金">现金</option>
+      </select></td>
+			<td><select name="Advance" class="textfield">
+      <option value="否">否</option>
+      <option value="是">是</option>
+      </select></td>
+			<td><input type="text" name="Contract" class="textfield"/></td>
+			<td><input type="text" name="PayDate" class="dateISO textfield" onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})"/></td>
+			<td><input type="text" name="PayMoney" class="number textfield" value="0"/></td>
+			<td align="center"><input type="button" onClick="$(this).parent().parent().hide();$(this).next().val(1);" style="background:no-repeat center url(../Images/delete.gif);width:40px;" /><input type="hidden" name="DeleteFlag" id="DeleteFlag" value="0"></td>
+		  </tr>
+		  </tbody>
+		</table>
+		</td>
+  </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" class="toolbar" colspan="8">
+
+	  <input type="hidden" name="detailType" id="detailType" value="">
+    <input name="addrow" type="button" class="button"  value="增加一行" style="WIDTH: 80;" onClick="$('#TbDetails').append($('#CloneNodeTr').clone().show())">&nbsp;
+			<input name="submitSaveAdd" type="submit" class="submit button"  value="保存" style="WIDTH: 80;" >&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="$('#addDiv').hide('slow').css('z-index','500');">&nbsp;
+	  </td>
+	</tr>
+</table>
+</form>
+</div>
+<div id="listDiv" style="width:100%;top:0;left:20;display:none;background-color:#ffffff;position:absolute;marginTop:-75px;marginLeft:-150px;overflow:auto; z-index:550">
+</div>
+</BODY>
+</HTML>

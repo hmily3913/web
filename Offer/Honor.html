@@ -1,0 +1,456 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+    <title></title>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/zTreeStyle.css">
+<link type="text/css" rel="Stylesheet" href="../Images/explorer.css" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/zTreeStyle.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.autocomplete.css">
+<style type="text/css">
+/* ------------- 右键菜单 -----------------  */
+
+div#rMenu {
+	background-color:#555555;
+	text-align: left;
+	padding:2px;
+}
+
+div#rMenu ul {
+	margin:1px 0;
+	padding:0 5px;
+	cursor: pointer;
+	list-style: none outside none;
+	background-color:#DFDFDF;
+}
+div#rMenu ul li {
+	margin:0;
+	padding:2px 0;
+}
+</style>
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.ztree-2.6.min.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.autocomplete.pack.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/xheditor-zh-cn.js"></script>
+<script language="javascript">
+var productList;
+var Autooptions={
+	minChars:1,
+	max:20,
+	width:250,
+	mustMatch: false,
+	matchContains:true,
+	formatItem:function(row,i,max){
+		return row.HonorName;
+	},
+	formatMatch:function(row,i,max){return row.HonorName;},
+	formatResult:function(row){return row.HonorName;}
+};
+function initAutoComplete(data){
+	productList=data;
+	$('#fileText').focus().autocomplete(productList,Autooptions);
+}
+
+var zTree1;
+var setting;
+var rMenu;
+	setting = {
+		expandSpeed:"",
+		dragCopy:true,
+		dragCopy:true,
+		keepParent: false,
+		keepLeaf: false,
+		isSimpleData : true,
+		treeNodeParentKey : "PSNum",
+		treeNodeKey : "SerialNum",
+		rootPID : 0,
+		async: true,
+		asyncParamOther : {"showType":"getInfo","detailType":"DocumentType"},
+		callback: {
+			click: zTreeOnClick,
+			rightClick: zTreeOnRightClick
+		}
+	};
+	$(document).ready(function(){
+		$.getJSON('HonorDetails.asp?showType=getInfo&detailType=getModel',null,initAutoComplete);
+		refreshTree();
+		$('#addDiv').easydrag(); 
+		$("#addDiv").setHandler("formove"); 
+		$("#AddForm").validate({
+			submitHandler:function(form){
+				$("input:submit").each(function() {this.disabled = true;});
+				$.post('HonorDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+					alert(data);
+					if(data.indexOf("成功")>-1) $("#flex1").flexReload();
+					$("input:submit").each(function() {this.disabled = false;});
+				});
+				$("#addDiv").hide("slow");
+				$("#addDiv").css("z-index","500");
+			}
+		});
+		$(".explorerState").text("当前目录: /");
+		rMenu = document.getElementById("rMenu");
+		$("body").bind("mousedown", 
+			function(event){
+				if (!(event.target.id == "rMenu" || $(event.target).parents("#rMenu").length>0)) {
+					rMenu.style.visibility = "hidden";
+				}
+			});
+		//查询
+    $("#zoom").click(function() {
+			zTree1.cancelSelectedNode();
+			$('#loading').show();
+			$("#flex1").flexOptions({newp: 1, params:[
+				{name:"KeyWork",value:$('#fileText').val()}]
+			});
+			$("#flex1").flexReload();
+    });
+    //添加
+    $("#newfile").click(function() {
+			var srcNode = zTree1.getSelectedNode();
+			if (!srcNode){
+				alert('请先选择分类，在进行增加！');
+				return false;
+			}
+			var txt=$(".explorerState").text();
+			$('#AddForm').resetForm();
+			
+			$('#TypeIDDetails').val(srcNode.SerialNum);
+			$('#TypeNameDetail').val(srcNode.name);
+			$('#detailType').val('AddFile');
+			$("#addDiv").show("slow");
+    });
+    //编辑
+    $("#edit").click(function() {
+			if($('.trSelected', $('#flex1')).length!=1){alert('请先选择一个荣誉再进行操作！');return false;}
+			$('#SerialNum').val($('.trSelected', $('#flex1')).attr("id").replace("row",""));
+			getInfo('SerialNum');
+			$('#detailType').val('EditFile');
+			$("#addDiv").show("slow");
+    });
+    //删除
+    $("#delete").click(function() {
+			if($('.trSelected', $('#flex1')).length==0){alert('请先选择一个文档再进行操作！');return false;}
+			var SNum=$('.trSelected', $('#flex1')).attr("ch").split('_ZZ$BH_')[1];
+			if (confirm('确定要删除文件：' + SNum + ' ?')){
+				$.post('HonorDetails.asp?showType=DataProcess&detailType=DeleteFile',{"SerialNum":$('.trSelected', $('#flex1')).attr("id").replace("row","")},function(data){
+					 alert(data);
+				if(data.indexOf("成功")>-1)seachFlex();
+				});
+			}
+    });
+    //刷新
+    $("#refresh").click(function() {
+			seachFlex();
+    });
+	});
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("HonorDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+						 if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+						 if(datajson.fieldValue[0][fieldone.id])
+						 	$('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+					 }
+			   });
+		   }
+		 }
+	 });
+}
+	
+	function zTreeOnClick(event, treeId, treeNode) {
+		var dir=getNodePath(treeNode);
+		$(".explorerState").text("当前目录: "+dir);
+		seachFlex();
+	}
+	function getNodePath(treeNode) {
+		if (!treeNode) return "/";
+		var p = treeNode.name;
+		var pNode = treeNode.parentNode;
+		while (pNode != null) {
+			p = pNode.name + "/" + p;
+			pNode = pNode.parentNode;
+		}
+		p = "/" + p;
+		return p;
+	}
+
+	function renameTreeNode(evt) {
+		var srcNode = zTree1.getSelectedNode();
+		if (!srcNode) {
+			alert("请先选中一个节点");
+			return;
+		}
+		hideRMenu();
+		$('#TypeSave').val('Edit');
+		$('#TypeID').val(srcNode.SerialNum);
+		$('#TypePsnum').val(srcNode.PSNum);
+		$('#TypeName').val(srcNode.name);
+		$("#editOne").show();
+		$("#editOne").css({"top":evt.clientY+"px", "left":evt.clientX+"px", "visibility":"visible"});
+	}
+	//右键菜单
+	function zTreeOnRightClick(event, treeId, treeNode) {
+		if (!treeNode && event.target.tagName.toLowerCase() != "button" && $(event.target).parents("a").length == 0) {
+			zTree1.cancelSelectedNode();
+			showRMenu("root", event.clientX, event.clientY);
+		} else if (treeNode && !treeNode.noR) {
+			zTree1.selectNode(treeNode);
+			showRMenu("node", event.clientX, event.clientY);
+		}
+	}
+	function showRMenu(type, x, y) {
+		$("#rMenu ul").show();
+		if (type=="root") {
+			$("#m_edit").hide();
+			$("#m_del").hide();
+			$("#m_check").hide();
+			$("#m_unCheck").hide();
+		}
+		$("#rMenu").css({"top":y+"px", "left":x+"px", "visibility":"visible"});
+	}
+	function hideRMenu() {
+		if (rMenu) rMenu.style.visibility = "hidden";
+	}
+	function addTreeNode(evt) {
+		hideRMenu();
+		var srcNode = zTree1.getSelectedNode();
+		$('#TypeSave').val('AddNew');
+		if (!srcNode) {
+			$('#TypePsnum').val(0);
+		}else{
+			$('#TypePsnum').val(srcNode.SerialNum);
+		}
+		$('#TypeID').val('');
+		$('#TypeName').val('');
+		$("#editOne").show();
+		$("#editOne").css({"top":evt.clientY+"px", "left":evt.clientX+"px", "visibility":"visible"});
+	}
+	function removeTreeNode() {
+		hideRMenu();
+		var node = zTree1.getSelectedNode();
+		if (node) {
+			if (node.nodes && node.nodes.length > 0) {
+				alert("要删除的节点是父节点，不允许执行删除操作，请先删除子节点！");
+				return ;
+			} else {
+				$.post('HonorDetails.asp?showType=DataProcess&detailType=Delete',{
+				  SerialNum:node.SerialNum
+				},function(data){
+				  if(data.indexOf("###")==-1) alert(data);
+				  else {
+					zTree1.removeNode(node);
+				  }
+				});
+			}
+		}
+	}
+	
+	function refreshTree() {
+		setting.asyncUrl= "HonorDetails.asp";
+		hideRMenu();
+		$('#editOne').hide();
+		var nodes = [];
+		setting.async = true;
+		zTree1 = $("#FileClass").zTree(setting, nodes);
+	}
+	function submitSave(){
+		var srcNode = zTree1.getSelectedNode();
+		$.post('HonorDetails.asp?showType=DataProcess&detailType='+$('#TypeSave').val(),{
+		  TypeID:$('#TypeID').val(),
+		  TypeName:$('#TypeName').val(),
+		  TypePsnum:$('#TypePsnum').val()
+		},function(data){
+		  if(data.indexOf("###")==-1) alert(data);
+		  else {
+			$('#editOne').hide();
+			if($('#TypeSave').val()=='Edit'){
+				srcNode.SerialNum=$('#TypeID').val();
+				srcNode.name=$('#TypeName').val();
+				zTree1.updateNode(srcNode, true);
+			}else if ($('#TypeSave').val()=='AddNew'){
+				var newNode=jQuery.parseJSON(data.split('###')[1]);
+				zTree1.addNodes(srcNode, newNode);
+			}
+		  }
+		});
+	}
+
+</script>
+</head>
+<body>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;z-index:500">
+ <form id="AddForm" name="AddForm" style="margin:0; padding:0 ">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="$('#addDiv').hide('slow').css('z-index','500');" >&nbsp;<strong>荣誉管理</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+		
+        <td WIDTH="10%" height="20" align="left">荣誉名称：</td>
+        <td WIDTH="15%"><input name="SerialNum" id="SerialNum" type="hidden">
+        <input name="HonorName" type="text" class="required textfield" id="HonorName" value="" maxlength="100"></td>
+        <td WIDTH="10%">荣誉分类：</td>
+        <td WIDTH="15%">
+        <input type="hidden" id="TypeIDDetails" name="TypeIDDetails" />
+        <input name="TypeNameDetail" type="text" class="required textfield" id="TypeNameDetail" readonly="readonly"></td>
+        <td WIDTH="10%">关键字：</td>
+        <td WIDTH="15%"><input name="KeyWords" type="text" class="textfield" id="KeyWords"></td>
+        <td WIDTH="10%">年份：</td>
+        <td WIDTH="15%"><input name="Years" type="text" class="textfield" id="Years"></td>
+      </tr>
+      <tr>
+		<td colspan="8"><fieldset><legend>荣誉内容：</legend>
+		  <textarea name="Contact" id="Contact" style="width:90%; height:350px; " class="xheditor {skin:'vista',width:'100%',height:'350',upImgUrl:'../Include/UpLoadAjax.asp?immediate=1',upLinkUrl:'../Include/UpLoadAjax.asp',upLinkExt:'doc,xls,pdf'}"></textarea></fieldset>
+		</td>
+		</tr> 
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" colspan="8" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input type="submit" class="submit button"  value="保存" style="WIDTH: 80;">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="$('#addDiv').hide('slow').css('z-index','500');">&nbsp;
+	  </td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+</div>
+    <div>
+ 
+        <div id="file" class="explorer">
+        <div class="filetitle">
+        <div class="filetxtarea">
+            <input type="text" id="fileText" />
+            <img src="../Images/document/images/zoom.png" title="Zoom" id="zoom" class="filetxtbtn" />
+            <img src="../Images/document/images/loading.gif" title="Loading" id="loading" class="filetxtbtn"/>
+        </div>
+        <div class="fileoptarea"><div class="fileoptarea_in">
+<!--            <div class="fileopt_img"><img title="Create New Folder" src="../Images/document/images/add.png" /></div><div class="fileopt" id="new">新建文件夹</div> -->
+            <div class="fileopt_img"><img title="Create New Folder" src="../Images/document/images/addfile.png" /></div><div class="fileopt" id="newfile">添加荣誉</div> 
+            <div class="fileopt_img"><img title="Edit" src="../Images/document/images/edit.png" /></div><div class="fileopt" id="edit">编辑荣誉</div>
+            <div class="fileopt_img"><img title="Delete" src="../Images/document/images/delete.png" /></div><div class="fileopt" id="delete">删除荣誉</div>
+            <div class="fileopt_img"><img title="Refresh" src="../Images/document/images/refresh.png" /></div><div class="fileopt" id="refresh">刷新</div>
+        </div></div>
+        </div>
+    <div id="fileTree" class="fileTree">
+    <ul id="FileClass" class="tree"></ul>
+    </div>
+    <div id="fileGrid" class="fileGrid"><table id="flex1" style="display:none"></table></div>
+    <div id="dialog"></div>
+    <div class="uploadfilearea">
+<!--        <div class="uploadfilearea_in">
+        <input type="file" id="fileToUpload" name="fileToUpload" /><input type="button" value="上传" id="buttonUpload" />
+        </div>-->
+        <div class="explorerState"></div>
+    </div>
+    </div>
+        
+    </div>
+    
+<div id="rMenu" style="position:absolute; visibility:hidden;">
+<li>
+<ul id="m_add" onclick="addTreeNode(event);"><li>增加节点</li></ul>
+<ul id="m_edit" onclick="renameTreeNode(event);"><li>编辑节点</li></ul>
+<ul id="m_del" onclick="removeTreeNode();"><li>删除节点</li></ul>
+<ul id="m_reset" onclick="refreshTree();"><li>重新载入</li></ul>
+</li>
+</div>
+<div id="editOne" style="position:absolute; visibility:hidden;">
+<table width="auto" style="margin:0;text-align: left; padding:0; background-color:#EBF2F9; border:0; color:#FFFFFF;">
+<tr>
+<td>分类名称</td>
+<td>
+<input type="hidden" id="TypePsnum" name="TypePsnum" />
+<input type="hidden" id="TypeID" name="TypeID" />
+<input type="text" id="TypeName" name="TypeName"/>
+<input type="hidden" id="TypeSave" name="TypeSave" />
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<input type="button" value="确定" style="width:60px; height:16px; font-size:12px " onclick="submitSave()"/>
+<input type="button" value="取消" style="width:60px; height:16px; font-size:12px " onclick="$('#editOne').hide()"/></td>
+</tr>
+</table>
+</div>
+<script language="javascript">
+$("#flex1").flexigrid
+	({
+	url: 'HonorDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '编号', name : 'SerialNum', width : 10, sortable : true, align: 'left',hide:true,toggle:false},
+	{display: '分类编号', name : 'TypeID', width : 10, sortable : true, align: 'left',hide:true,toggle:false},
+	{display: '分类名称', name : 'TypeName', width : 50, sortable : true, align: 'left'},
+	{display: '荣誉名称', name : 'HonorName', width : 100, sortable : true, align: 'left'},
+	{display: '年份', name : 'Years', width : 100, sortable : true, align: 'left'},
+	{display: '登记人', name : 'Biller', width : 60, sortable : true, align: 'left'},
+	{display: '登记时间', name : 'BillDate', width : 100, sortable : true, align: 'left'}
+		],
+	onRowDblclick:rowdbclick,
+	onSuccess:successCallback,
+	sortname: "TypeID asc,a.SerialNum",
+	sortorder: "desc",
+	singleSelect: false,
+	striped:false,//
+	usepager: true,
+	showcheckbox: true,
+//	title: '文档管理',
+	showTableToggleBtn: true,
+	width:'100%',
+	height:417
+	}
+);
+function rowdbclick(rowData){
+	var treeNode = zTree1.getNodeByParam("SerialNum", $(rowData).data("TypeID"));
+	if (treeNode)zTree1.selectNode(treeNode);
+	jQuery.get("HonorDetails.asp", { "showType": "getInfo","detailType":"showHonor","InfoID":$(rowData).data("SerialNum")},
+	function(data){
+		var sHTML='<html><head><meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/><title>'+$(rowData).data("HonorName")+'</title></head><body>' + data + '</body></html>';
+		var screen=window.screen,oWindow=window.open('', 'xhePreview', 'toolbar=yes,location=no,status=yes,menubar=yes,scrollbars=yes,resizable=yes,width='+Math.round(screen.width*0.9)+',height='+Math.round(screen.height*0.8)+',left='+Math.round(screen.width*0.05)),oDoc=oWindow.document;
+		oDoc.open();
+		oDoc.write(sHTML);
+		oDoc.close();
+		oWindow.focus();
+	});
+}
+function successCallback(){
+	$('#loading').hide();
+}
+function seachFlex(){
+	$('#loading').show();
+	var srcNode = zTree1.getSelectedNode();
+	var TypeIDstr=srcNode?srcNode.SerialNum:0;
+	$("#flex1").flexOptions({newp: 1, params:[
+		{name:"TypeID",value:TypeIDstr}
+		]
+	});
+	$("#flex1").flexReload();
+}
+</script>
+<div id="DropdownMenuBackground" style="display:none; position:absolute; height:200px; min-width:150px; background-color:white;border:1px solid;overflow-y:auto;overflow-x:auto; z-index:999999">
+	<ul id="dropdownMenu" class="tree"></ul>
+</div>
+
+</body>
+</html>

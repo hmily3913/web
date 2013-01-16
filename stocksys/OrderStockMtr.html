@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+
+</style>
+</head>
+<body>
+<table width="100%" id="QueryTable" style="border: 1px solid #99BBE8;"></table>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'OrderStockMtrDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: 'ID', name : 'SerialNum', width : 10, sortable : true, align: 'left', toggle: false, hide: true},
+	{display: '物料编号', name : 'FMaterialNumber', width : 80, sortable : true, align: 'left'},
+	{display: '物料名称', name : 'FMaterialName', width : 150, sortable : true, align: 'left'},
+	{display: '批号', name : 'FBatchNo', width : 80, sortable : true, align: 'left'},
+	{display: '库位', name : 'FSPName', width : 80, sortable : true, align: 'left'},
+	{display: '单位', name : 'FBUUnitName', width : 40, sortable : true, align: 'left'},
+	{display: '数量', name : 'FBUQty', width : 60, sortable : true, align: 'left'},
+	{display: '订单数量', name : 'icmoqty', width : 60, sortable : true, align: 'left'},
+	{display: '剩余比例', name : 'bili', width : 60, sortable : true, align: 'left'},
+	{display: '责任单位', name : 'Department', width : 50, sortable : true, align: 'left'},
+	{display: '说明', name : 'Reason', width : 50, sortable : true, align: 'left'},
+	{display: '责任回复', name : 'Gaishan', width : 50, sortable : true, align: 'left'},
+	{display: '回复人', name : 'Checker', width : 50, sortable : true, align: 'left'},
+	{display: '回复时间', name : 'CheckDate', width : 50, sortable : true, align: 'left'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "FMaterialNumber",
+	sortorder: "asc",
+	striped:true,//
+	usepager:false,
+	autoload: true,
+	rp: 20,
+	usepager: true,
+	title: '库存订单物料',
+	showTableToggleBtn: true,
+	width:'100%',
+	height: 450
+	}
+	);
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#SerialNum').val($(rowData).data(("SerialNum")));
+		getInfo('SerialNum')
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+function getInfo(obj){
+  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("OrderStockMtrDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+					   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+					   if(datajson.fieldValue[0][fieldone.id])
+					     $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+					 }
+			   });
+		   }
+		   else if(obj=="CheckerID"){
+				 $("#CheckerID").val(data.split('###')[0]);
+				 $("#Checker").val(data.split('###')[1]);
+		   }
+		 }
+	   });
+}
+function toSubmit(obj){
+	if(obj.value=='责任判定')
+	$('#detailType').val('STSave');
+	else
+	$('#detailType').val('MNSave');
+  $.post('OrderStockMtrDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+		alert(data);
+    if(data.indexOf("成功")>-1){
+			$("#addDiv").hide("slow");
+			$("#addDiv").css("z-index","500");
+			$("#flex1").flexReload();
+		}
+  });
+}
+
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm" style="margin:0; padding:0 ">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="$('#addDiv').hide('slow').css('z-index','500');" >&nbsp;<strong>库存订单物料责任回复</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+		<table width="100%" border="0" id="editDetails" cellpadding="3" cellspacing="1">
+		  <tbody id="TbDetails">
+      <tr>
+        <td height="20" align="left" width="10%">物料编号：</td>
+        <td WIDTH='15%'>
+        <input type="hidden" id="SerialNum" name="SerialNum" />
+        <input type="text" id="FMaterialNumber" name="FMaterialNumber" readonly="readonly" class="textfield" />
+		</td>
+        <td height="20" align="left" width="10%">物料名称：</td>
+        <td  WIDTH='15%'><input name="FMaterialName" type="text" class="textfield" id="FMaterialName" readonly="readonly"></td>
+        <td height="20" align="left" width="10%">计划跟踪号：</td>
+        <td  WIDTH='15%'><input name="FBatchNo" type="text" class="textfield" id="FBatchNo" readonly="readonly"></td>
+        <td height="20" align="left" width="10%">库位：</td>
+        <td  WIDTH='15%'><input name="FSPName" type="text" class="textfield" id="FSPName" readonly="readonly"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">单位：</td>
+        <td><input name="FBUUnitName" type="text" class="textfield" id="FBUUnitName"  value="" readonly="true"></td>
+        <td height="20" align="left">库存数量：</td>
+        <td><input name="FBUQty" type="text" class="textfield" id="FBUQty"  value="" readonly="true"></td>
+        <td height="20" align="left">订单数量：</td>
+        <td><input name="icmoqty" type="text" class="textfield" id="icmoqty"  value="" readonly="true"></td>
+        <td height="20" align="left"></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">责任部门：</td>
+        <td>
+			<select id="Department" name="Department" class="textfield">
+		  <option value="" ></option>
+		  <option value="一厂" >一厂</option>
+		  <option value="二厂" >二厂</option>
+		  <option value="三厂" >三厂</option>
+		  <option value="眼镜布绳" >眼镜布绳</option>
+		  <option value="花生盒" >花生盒</option>
+		  <option value="采购部" >采购部</option>
+		  <option value="管理部" >管理部</option>
+		  <option value="营销部" >营销部</option>
+		  <option value="品管部" >品管部</option>
+		  <option value="工程部" >工程部</option>
+		  <option value="仓储科" >仓储科</option>
+		  <option value="生产中心" >生产中心</option>
+      </select>
+      </td>
+        <td align="left">责任人：</td>
+        <td><input name="CheckerID" type="text" class="textfield" id="CheckerID" value="" onBlur="getInfo('CheckerID')"></td>
+        <td align="left">姓名：</td>
+        <td ><input name="Checker" type="text" class="textfield" id="Checker" value="" readonly="true"></td>
+        <td align="left">回复时间：</td>
+        <td ><input name="CheckDate" type="text" class="textfield" id="CheckDate" value="" readonly="true"></td>
+      </tr>
+      <tr>
+        <td colspan="8"><fieldset><legend>备注：</legend>
+	  <textarea name="Reason" id="Reason" style="width:90%; height:80px; font-size:12px;"></textarea></fieldset>
+	  </td>
+			</tr>
+      <tr>
+        <td colspan="8"><fieldset><legend>责任回复：</legend>
+	  <textarea name="Gaishan" id="Gaishan" style="width:90%; height:80px; font-size:12px;"></textarea></fieldset>
+	  </td>
+			</tr>
+		  </tbody>
+		</table>
+		</td>
+  </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input type="button" class="button"  value="责任判定" style="WIDTH: 80;" onclick="toSubmit(this)">&nbsp;
+			<input type="button" class="button"  value="责任回复" style="WIDTH: 80;" onclick="toSubmit(this)">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="$('#addDiv').hide('slow').css('z-index','500');">&nbsp;
+	  </td>
+	</tr>
+</table>
+</form>
+</div>
+
+</BODY>
+</HTML>

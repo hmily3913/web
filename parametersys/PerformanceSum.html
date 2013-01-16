@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.autocomplete.css">
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.autocomplete.pack.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table width="100%">
+  <tr>
+	<td width="10%">年份:</td>
+	<td width="15%"><select name="FYear" id="FYear">
+	<option value="2011">2011</option>
+	<option value="2012">2012</option>
+	<option value="2013">2013</option>
+	</select></td>
+	<td width="10%">月份</td>
+	<td width="15%"><select name="FMonth" id="FMonth">
+	<option value="1">01</option>
+	<option value="2">02</option>
+	<option value="3">03</option>
+	<option value="4">04</option>
+	<option value="5">05</option>
+	<option value="6">06</option>
+	<option value="7">07</option>
+	<option value="8">08</option>
+	<option value="9">09</option>
+	<option value="10">10</option>
+	<option value="11">11</option>
+	<option value="12">12</option>
+	</select></td>
+	<td width="10%">部门</td>
+	<td width="15%"><input type="text" name="Department" id="Department" class="textfield">
+	</td>
+	<td width="25%" rowspan="2" align="center"><input type="button" value="查询" onclick="doSearch()"  style="background: url(../images/images/flexigrid/headbg.gif) repeat-x top; height:25px; font-size:12px; border: 1px solid #99bbe8;border-top: 0px;font-weight: bold;overflow: hidden;white-space: nowrap;"/></td>
+  </tr>
+  <tr>
+	<td>岗位</td>
+	<td><input type="text" name="PostName" id="PostName" class="textfield"></td>
+	<td>员工</td>
+	<td><input type="text" name="PersonName" id="PersonName" class="textfield"></td>
+	<td>项目</td>
+	<td><input type="text" name="ItemName" id="ItemName" class="textfield"></td>
+  </tr>
+  <tr>
+	<td colspan="6" align="center"></td>
+  </tr>
+</table>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+var DepartmentList;
+var PersonNameList;
+var ItemNameList;
+$(function(){
+	$.getJSON('PerformancePostDetails.asp?showType=getInfo&detailType=SearchData',null,initAutoComplete1);
+	$.getJSON('PerformanceSumDetails.asp?showType=getInfo&detailType=PostName',null,initAutoComplete2);
+	$.getJSON('PerformanceSumDetails.asp?showType=getInfo&detailType=PersonName',null,initAutoComplete3);
+	$.getJSON('PerformanceSumDetails.asp?showType=getInfo&detailType=ItemName',null,initAutoComplete4);
+});
+function initAutoComplete1(data){
+	DepartmentList=data;
+	$('#Department').focus().autocomplete(DepartmentList,{
+		minChars:1,
+		max:50,
+		width:250,
+		mustMatch: true,
+		matchContains:true,
+		formatItem:function(row,i,max){
+			return "\""+row.DepartId+"\""+" ["+row.DepartName+"]";
+		},
+		formatMatch:function(row,i,max){return row.DepartId+" "+row.DepartName;},
+		formatResult:function(row){return row.DepartName;}
+	});
+}
+function initAutoComplete2(data){
+	PersonNameList=data;
+	$('#PostName').focus().autocomplete(PersonNameList,{
+		minChars:1,
+		max:50,
+		width:250,
+		mustMatch: true,
+		matchContains:true,
+		formatItem:function(row,i,max){
+			return "\""+row.SerialNum+"\""+" ["+row.PostName+"]";
+		},
+		formatMatch:function(row,i,max){return row.SerialNum+" "+row.PostName;},
+		formatResult:function(row){return row.PostName;}
+	});
+}
+function initAutoComplete3(data){
+	PersonNameList=data;
+	$('#PersonName').focus().autocomplete(PersonNameList,{
+		minChars:1,
+		max:50,
+		width:250,
+		mustMatch: true,
+		matchContains:true,
+		formatItem:function(row,i,max){
+			return "\""+row.PersonId+"\""+" ["+row.PersonName+"]";
+		},
+		formatMatch:function(row,i,max){return row.PersonId+" "+row.PersonName;},
+		formatResult:function(row){return row.PersonName;}
+	});
+}
+function initAutoComplete4(data){
+	ItemNameList=data;
+	$('#ItemName').focus().autocomplete(ItemNameList,{
+		minChars:1,
+		max:50,
+		width:250,
+		mustMatch: true,
+		matchContains:true,
+		formatItem:function(row,i,max){
+			return "\""+row.SerialNum+"\""+" ["+row.ItemName+"]";
+		},
+		formatMatch:function(row,i,max){return row.SerialNum+" "+row.ItemName;},
+		formatResult:function(row){return row.ItemName;}
+	});
+}
+
+$("#flex1").flexigrid
+	(
+	{
+	url: 'PerformanceSumDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '部门', name : 'SerialNum', width : 60, sortable : true, align: 'left'},
+	{display: '岗位', name : 'RegisterName', width : 100, sortable : true, align: 'left'},
+	{display: '员工编号', name : 'ProductId', width : 60, sortable : true, align: 'left'},
+	{display: '姓名', name : 'ProductName', width : 60, sortable : true, align: 'left'},
+	{display: '项目', name : 'Scene', width : 100, sortable : true, align: 'left'},
+	{display: '权重', name : 'InDate', width : 50, sortable : true, align: 'left'},
+	{display: '目标值', name : 'Position', width : 60, sortable : true, align: 'left'},
+	{display: '达成率', name : 'InjuryType', width : 60, sortable : true, align: 'left'},
+	{display: '得分', name : 'InsuranceFlag', width : 50, sortable : true, align: 'left'}
+		],
+	onRowDblclick:rowdbclick,
+	singleSelect: true,
+	striped:true,//
+	rp: 50,
+	usepager: true,
+	title: '绩效明细查询界面',
+	showTableToggleBtn: true,
+	width:'100%',
+	autoload: false,
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		$('#imgdiv').html('');
+		getInfo('SerialNum');
+		$('#DeliveryDate').datepick({dateFormat: 'yyyy-mm-dd'});
+		$("#addDiv").show("slow");
+		$('#fromdiv').show();
+		$('#todiv').hide();
+		$('#detailType').val('Edit');
+		$(".ClearHide").show('fast');
+	}
+
+function doSearch()
+	{
+		$("#flex1").flexOptions({newp: 1, params:[
+			{name:"FYear",value:$('#FYear').val()},
+			{name:"FMonth",value:$('#FMonth').val()},
+			{name:"Department",value:$('#Department').val()},
+			{name:"PostName",value:$('#PostName').val()},
+			{name:"PersonName",value:$('#PersonName').val()},
+			{name:"ItemName",value:$('#ItemName').val()}]
+		});
+		$("#flex1").flexReload();
+	}			
+</script>
+</BODY>
+</HTML>

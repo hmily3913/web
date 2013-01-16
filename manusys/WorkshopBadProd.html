@@ -1,0 +1,440 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/AdvSearch.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+#QueryTable{
+	border-color: -moz-use-text-color #CCCCCC #CCCCCC;
+	border-right: 1px solid #CCCCCC;
+	border-leftt: 1px solid #CCCCCC;
+	border-style: none solid solid;
+	border-width: 0 1px 1px;
+}
+</style>
+</head>
+<body>
+<table width="100%" id="QueryTable" style="border: 1px solid #99BBE8;"></table>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+QueryArea=[{name:'生产车间',value:'icmo.FworkShop',type:1,Content:[]},
+{name:'制单日期',value:'icmo.FCheckdate',type:3},
+{name:'生产任务单号',value:'icmo.Fbillno'},
+{name:'计划跟踪号',value:'icmo.FMtono'},
+{name:'产品名称',value:'d.FName'},
+{name:'产品代码',value:'d.FNumber'}
+];
+function doSearch(){
+		$("#flex1").flexOptions({newp: 1, params:[
+			{name:"AllQuery",value:$('#AllQuery').val()}]
+		});
+		$("#flex1").flexReload();
+}
+function initProductType(data){
+	QueryArea[0].Content=data;
+	AdvSearch();
+}
+
+$(function(){
+	$.getJSON('WorkshopBadProdDetails.asp?showType=getDepart',null,initProductType);
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'WorkshopBadProdDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '生产车间', name : 'n0', width : 60, sortable : true, align: 'left'},
+	{display: '制单日期', name : 'n1', width : 60, sortable : true, align: 'left'},
+	{display: '结案日期', name : 'n15', width : 60, sortable : true, align: 'left'},
+	{display: '计划跟踪号', name : 'n2', width : 80, sortable : true, align: 'left'},
+	{display: '产品代码', name : 'n3', width : 80, sortable : true, align: 'left'},
+	{display: '产品名称', name : 'n13', width : 120, sortable : true, align: 'left'},
+	{display: '生产任务单', name : 'n4', width : 60, sortable : true, align: 'left'},
+	{display: '生产任务数', name : 'n6', width : 60, sortable : true, align: 'left'},
+	{display: '完工数', name : 'n7', width : 50, sortable : true, align: 'left'},
+	{display: '入库数', name : 'n8', width : 50, sortable : true, align: 'left'},
+	{display: '应发数量', name : 'n9', width : 50, sortable : true, align: 'left'},
+	{display: '实领数量', name : 'n10', width : 50, sortable : true, align: 'left'},
+	{display: '补料数量', name : 'n11', width : 50, sortable : true, align: 'left'},
+	{display: '报废数量', name : 'n16', width : 50, sortable : true, align: 'left'},
+	{display: '内码', name : 'n20', width : 10, sortable : true, align: 'left',hide:true,toggle:false}
+		],
+	buttons : [
+		{name: '查明细',  onpress : test},
+		{separator: true}
+		],
+	onRowDblclick:rowdbclick,
+	striped:true,//
+	usepager:false,
+	autoload: false,
+	singleSelect: true,
+	rp: 20,
+	usepager: true,
+	title: '车间良品及不合格品统计',
+	showTableToggleBtn: true,
+	width:'100%',
+	height: 500
+	}
+	);
+	function test(com,grid)
+	{
+		if (com=='查明细')
+			{
+			var txt='生产车间：<select id="FCJ" name="FCJ">';
+				txt+='<option value=""></option>';
+				for(var m=0;m<QueryArea[0].Content.length;m++){
+					txt+='<option value="'+QueryArea[0].Content[m].CValue+'">'+QueryArea[0].Content[m].title+'</option>';
+				}
+				txt+='</select><br/><br/>';
+				txt+='产生工段:<select name="FGD" id="FGD" >';
+				txt+='<option value=""></option>';
+				txt+='<option value="喷漆">喷漆</option>';
+			 txt+='<option value="展示架">展示架</option>';
+			 txt+='<option value="展示柜">展示柜</option>';
+			 txt+='<option value="有机玻璃">有机玻璃</option>';
+			 txt+='<option value="眼镜布绳">眼镜布绳</option>';
+			 txt+='<option value="硬盒包装段">硬盒包装段</option>';
+			 txt+='<option value="注塑一段">注塑一段</option>';
+			 txt+='<option value="硬盒冲床段">硬盒冲床段</option>';
+			 txt+='<option value="硬盒包盒段">硬盒包盒段</option>';
+			 txt+='<option value="注塑包装">注塑包装</option>';
+			 txt+='<option value="下料段">下料段</option>';
+			 txt+='<option value="针车段">针车段</option>';
+			 txt+='<option value="精品段">精品段</option>';
+			 txt+='<option value="打胶段">打胶段</option>';
+			 txt+='<option value="花生盒">花生盒</option>';
+		   txt+='</select><br/><br/>';
+				txt+='是否处理:<select name="DealF" id="DealF" >';
+				txt+='<option value=""></option>';
+				txt+='<option value="否">否</option>';
+			 txt+='<option value="是">是</option>';
+		   txt+='</select><br/><br/>';
+				txt+='登记日期：从<input name="SDate" type="text" class="textfield" id="SDate" style="width:30%;" value="" maxlength="100"  onfocus="$(this).datepick()">到<input name="EDate" type="text" class="textfield" id="EDate" style="width:30%" value="" maxlength="100"  onfocus="$(this).datepick()"><br/><br/>';
+				$.prompt(txt,{
+					buttons: { 页面查看: 'webLook',导出: 'outprint' },
+					submit:function(v,m,f){ 
+						if(v=='webLook'){
+							$('#listDiv').load("WorkshopBadProdDetails.asp #listtable",{
+								showType:'Excel',
+								FCJ:f.FCJ,
+								EDate:f.EDate,
+								FGD:f.FGD,
+								DealF:f.DealF,
+								SDate:f.SDate
+							 },function(response, status, xhr){
+								if (status =="success") {
+									$('#QueryTable').hide();
+									$.prompt.close();
+									$("#listDiv").show("slow");
+								}	
+							});
+						}
+						if(v=='outprint'){
+							window.open("WorkshopBadProdDetails.asp?showType=Excel&Printtag=1&FCJ="+f.FCJ+"&SDate="+f.SDate+"&EDate="+f.EDate+"&FGD="+escape(f.FGD)+"&DealF="+escape(f.DealF),"Print","","false");
+							$.prompt.close();
+						}
+						return false; 
+					 }
+				 });
+			}
+	}
+	function rowdbclick(rowData){
+		$('#n0').text($(rowData).data("n0"));
+		$('#n1').text($(rowData).data("n1"));
+		$('#n2').text($(rowData).data("n2"));
+		$('#n3').text($(rowData).data("n3"));
+		$('#n13').text($(rowData).data("n13"));
+		$('#n6').text($(rowData).data("n6"));
+		$('#TbDetails tr:gt(0)').remove();
+		$.get("WorkshopBadProdDetails.asp", { showType: "getInfo", InfoID: $(rowData).data("n20") },
+			 function(data){
+				 var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+				 var tbhtml = [];
+				 for(var n=0;n<datajson.row.length;n++){
+					tbhtml.push("<tr ondblclick=\"return showEditDiv(this)\" onMouseOver = \"this.style.backgroundColor = '#FFFF99'\" onMouseOut = \"this.style.backgroundColor = '#ffffff'\" style='cursor:hand' bgcolor='#ffffff'>");
+					 $('td',$('#detailsTable tr:first')).each(function(i,fieldone){
+						 tbhtml.push("<td nowrap=\"nowrap\" style='",$(fieldone).attr('style'),"'");
+						 tbhtml.push(" name='",$(fieldone).attr('class'),"'>");
+						 tbhtml.push(datajson.row[n].data[i]);
+						 tbhtml.push("</td>");
+					 });
+					 tbhtml.push("</tr>");
+				 }
+					 $('#TbDetails').append(tbhtml.join(""));
+			 });
+		$("#addDiv").show("slow");
+		$("#addDiv").css("z-index","500");
+		$("#QueryTable").hide();
+	}
+	
+function showEditDiv(obj){
+	$('#AddForm').resetForm();
+	$('td',$(obj)).each(function(i,fieldone){
+		if($('#'+$(fieldone).attr('name'),$('#AddForm'))){
+			$('#'+$(fieldone).attr('name'),$('#AddForm')).val($(fieldone).text());
+		}
+	});
+		$('#DetailsTwo tr:gt(1)').remove();
+		$.get("WorkshopBadProdDetails.asp", { showType: "getInfoDetails", InfoID: $('td[name=FICMOID]',$(obj)).text(), InfoID1: $('td[name=Fitemid]',$(obj)).text() },
+			 function(data){
+				 var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+				 var tbhtml = [];
+				 for(var n=0;n<datajson.row.length;n++){
+					 $('#DetailsTwo').append($('#CloneNodeTr').clone().show());
+					 $(':input',$('#DetailsTwo tr:last')).each(function(i,fieldone){
+						 $(fieldone).val(datajson.row[n].data[i]);
+					 });
+				 }
+			 });
+	$("#addOneDiv").show("slow");
+}
+	
+function toSubmit(obj){
+	if($('#MtrName').val()==''){alert('名称不能为空！');return false;}
+	obj.disabled = true;
+	var submitType=obj.value=="保存"?"SaveOne":"DealOne";
+	$.post('WorkshopBadProdDetails.asp?showType=DataProcess&submitType='+submitType,$("#AddForm").serialize(),function(data){
+		if(data.indexOf("###")==-1) alert(data);
+	else $("#flex1").flexReload();
+			obj.disabled = false;
+	});
+	$("#addOneDiv").hide("slow");
+}
+function MycheckNum(obj){
+	if(checkNum(obj)){
+		if($('#FUnit',$('#AddForm')).val()=='PCS'||$('#FUnit',$('#AddForm')).val()=='个'||$('#FUnit',$('#AddForm')).val()=='付'||$('#FUnit',$('#AddForm')).val()=='粒'||$('#FUnit',$('#AddForm')).val()=='只'){
+			$('input[name=ReductQty]',obj.parentNode.parentNode).val(obj.value);
+			$('input[name=Percent]',obj.parentNode.parentNode).val(Math.round(parseFloat($('#AllQty',$('#AddForm')).val())==0?0:obj.value*100*100/parseFloat($('#AllQty',$('#AddForm')).val()))/100);
+		}else{
+			$('input[name=ReductQty]',obj.parentNode.parentNode).val(Math.round(obj.value*$('#DWuse',$('#AddForm')).val()*100)/100);
+			$('input[name=Percent]',obj.parentNode.parentNode).val(Math.round(parseFloat($('#AllQty',$('#AddForm')).val())==0?0:obj.value*parseFloat($('#DWuse',$('#AddForm')).val())*100*100/parseFloat($('#AllQty',$('#AddForm')).val()))/100);
+		}
+	}
+}
+function DealAll(){
+	var n = $("input[name='SerialNum']:checkbox:checked").length; 
+	if(n==0){ 
+		alert("未选中,不允许进行处理！"); 
+	}else{ 
+		$.post('WorkshopBadProdDetails.asp?showType=DealAll',$("#allBad").serialize(),function(data){
+			alert(data);
+		});
+	} 
+}
+</script>
+<div id="addDiv" style="width:100%;top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow:hidden; z-index:500">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="$('#addDiv').hide().css('z-index','500');$('#QueryTable').show();" >&nbsp;<strong>生产车间良品及不合格统计分析表</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" nowrap bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id="editNews">
+
+<tr><td>生产单位：</td><td id="n0"></td><td>生产日期：</td><td id="n1"></td><td>计划跟踪号：</td><td id="n2"></td><td width="20%"></td>
+</tr>
+<tr>
+<td>产品代码：</td><td id="n3"></td><td>产品名称：</td><td id="n13"></td><td>数量：</td><td id="n6"></td><td width="20%"></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+<div style="width:100%; overflow-y:hidden; overflow-x:scroll;">
+<table id="detailsTable" style="width:100%; overflow-y:hidden; overflow-x:scroll;">
+<tbody id="TbDetails">
+<tr bgcolor="#99BBE8">
+<td nowrap="nowrap" style="display:none" class="FICMOID">FICMOID</td>
+<td nowrap="nowrap" style="display:none" class="Fitemid">ID</td>
+<td nowrap="nowrap" class="Fnumber">物料编号</td>
+<td nowrap="nowrap" class="Fname">物料名称</td>
+<td nowrap="nowrap" class="FUnit">还原单位</td>
+<td nowrap="nowrap" class="DWuse">单位用量</td>
+<td nowrap="nowrap" class="BomUse">BOM用料</td>
+<td nowrap="nowrap" class="AllQty">订单数量</td>
+<td nowrap="nowrap" class="Qty">数量</td>
+<td nowrap="nowrap" class="ReductQty">还原数量</td>
+<td nowrap="nowrap" class="Percent">产生比例</td>
+<td nowrap="nowrap" class="DealFlag">处置确认</td>
+<td nowrap="nowrap" class="Dealdate">处置日期</td>
+<td nowrap="nowrap" class="DealerID">处置人编号</td>
+<td nowrap="nowrap" class="Dealer">处置人</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="addOneDiv" style="width:100%;top:0;left:20;display:none;background-color:#ffffff;position:absolute;marginTop:-75px;marginLeft:-150px;overflow:auto;z-index:600">
+<form id="AddForm">
+<table width="100%">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove2" colspan="8"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:$('#addOneDiv').hide()" >&nbsp;<strong>生产车间良品及不良品跟踪</strong></font></td>
+  </tr>
+  <tr>
+	  <td width="10%">物料编号</td>
+	  <td width="15%"><input type="hidden" name="Fitemid" id="Fitemid"/><input type="hidden" name="FICMOID" id="FICMOID"/><input type="text" name="Fnumber" id="Fnumber" readonly="readonly" class="textfield"/></td>
+	  <td width="10%">物料名称</td>
+	  <td width="15%"><input type="text" name="Fname" id="Fname" readonly="readonly" class="textfield"/></td>
+	  <td width="10%">还原单位</td>
+	  <td width="15%"><input type="text" name="FUnit" id="FUnit" readonly="readonly" class="textfield"/></td>
+	  <td width="10%">单位用量</td>
+	  <td width="15%"><input type="text" name="DWuse" id="DWuse" readonly="readonly" class="textfield"/></td>
+  </tr>
+  <tr>
+	  <td>BOM用料</td>
+	  <td><input type="text" name="BomUse" id="BomUse" readonly="readonly" class="textfield"/></td>
+	  <td>订单数量</td>
+	  <td><input type="text" name="AllQty" id="AllQty" readonly="readonly" class="textfield"/></td>
+	  <td></td>
+	  <td></td>
+	  <td></td>
+	  <td>
+    </td>
+  </tr>
+  <tr>
+  <td colspan="8">
+  <table width="100%">
+  <tbody id="DetailsTwo">
+  <tr bgcolor="#99BBE8">
+<td nowrap="nowrap" class="MtrName">名称</td>
+<td nowrap="nowrap" class="Unit">单位</td>
+<td nowrap="nowrap" class="Qty">数量</td>
+<td nowrap="nowrap" class="ReductQty">还原数量</td>
+<td nowrap="nowrap" class="Percent">产生比例</td>
+<td nowrap="nowrap" class="MtrType">物料类别</td>
+<td nowrap="nowrap" class="available">是否可利用</td>
+<td nowrap="nowrap" class="sourceType">工段</td>
+<td nowrap="nowrap" class="sourceType">来源项目</td>
+<td nowrap="nowrap" class="sourceReason">来源说明</td>
+<td nowrap="nowrap" class="ResponsDepart">责任单位</td>
+<td nowrap="nowrap" class="Dealsugg">处置建议</td>
+<td nowrap="nowrap" class="Dealresult">处置结果说明</td>
+<td nowrap="nowrap" class="Remark">备注</td>
+<td nowrap="nowrap" class="Remark">操作</td>
+</tr>
+  <tr style="display:none" id="CloneNodeTr">
+    <input type="hidden" name="SerialNum" />
+    <input type="hidden" name="icmo_id" />
+    <input type="hidden" name="itemid" />
+<td nowrap="nowrap"><input type="text" name="MtrName" class="textfield"/></td>
+<td nowrap="nowrap"><input type="text" name="Unit" class="textfield"/></td>
+<td nowrap="nowrap"><input type="text" name="Qty" class="textfield" onblur="return MycheckNum(this)"/></td>
+<td nowrap="nowrap"><input type="text" name="ReductQty" readonly="readonly" class="textfield"/></td>
+<td nowrap="nowrap"><input type="text" name="Percent" readonly="readonly" class="textfield"/></td>
+<td nowrap="nowrap"><select name="MtrType" >
+     <option value="原材料">原材料</option>
+     <option value="半成品">半成品</option>
+     <option value="成品">成品</option>
+     </select></td>
+<td nowrap="nowrap"><select name="available" >
+     <option value="可直接利用">可直接利用</option>
+     <option value="可挑选利用">可挑选利用</option>
+     <option value="可拆分后利用">可拆分后利用</option>
+     <option value="可修复使用">可修复使用</option>
+     <option value="无法利用">无法利用</option>
+     </select></td>
+<td nowrap="nowrap"><select name="Section" >
+   <option value="喷漆">喷漆</option>
+   <option value="展示架">展示架</option>
+   <option value="展示柜">展示柜</option>
+   <option value="有机玻璃">有机玻璃</option>
+   <option value="眼镜布绳">眼镜布绳</option>
+   <option value="硬盒包装段">硬盒包装段</option>
+   <option value="注塑一段">注塑一段</option>
+   <option value="硬盒冲床段">硬盒冲床段</option>
+   <option value="硬盒包盒段">硬盒包盒段</option>
+   <option value="注塑包装">注塑包装</option>
+   <option value="下料段">下料段</option>
+   <option value="针车段">针车段</option>
+   <option value="精品段">精品段</option>
+   <option value="打胶段">打胶段</option>
+   <option value="花生盒">花生盒</option>
+   </select></td>
+<td nowrap="nowrap"><select name="sourceType" >
+     <option value="料次">料次</option>
+     <option value="工次">工次</option>
+     <option value="超单">超单</option>
+     <option value="订单暂停">订单暂停</option>
+     <option value="订单变更">订单变更</option>
+     <option value="订单取消">订单取消</option>
+     </select></td>
+<td nowrap="nowrap"><input type="text" name="sourceReason" class="textfield"/></td>
+<td nowrap="nowrap"><select name="ResponsDepart" >
+   <option value="营销部">营销部</option>
+   <option value="一分厂">一分厂</option>
+   <option value="二分厂">二分厂</option>
+   <option value="三分厂">三分厂</option>
+   <option value="眼镜布绳">眼镜布绳</option>
+   <option value="花生盒">花生盒</option>
+   <option value="娄桥">娄桥</option>
+   <option value="生管部">生管部</option>
+   <option value="品保部">品保部</option>
+   <option value="工程部">工程部</option>
+   <option value="采购部">采购部</option>
+   <option value="财务部">财务部</option>
+   <option value="生技部">生技部</option>
+   <option value="仓储科">仓储科</option>
+   <option value="管理部">管理部</option>
+   </select></td>
+<td nowrap="nowrap"><input type="text" name="Dealsugg" class="textfield"/></td>
+<td nowrap="nowrap"><input type="text" name="Dealresult" class="textfield"/></td>
+<td nowrap="nowrap"><input type="text" name="Remark" class="textfield"/></td>
+<td align="center"><input type="button" onClick="$(this).parent().parent().hide();$(this).next().val(1);" style="background:no-repeat center url(../Images/delete.gif);width:40px;" /><input type="hidden" name="DeleteFlag" id="DeleteFlag" value="0"></td>
+  </tr>
+  </tbody>
+  </table>
+  </td>
+  </tr>
+  <tr>
+	  <td>是否处置</td>
+	  <td><input type="text" name="DealFlag" id="DealFlag" readonly="readonly" class="textfield"/>
+	  <td>处置日期</td>
+	  <td><input type="text" name="Dealdate" id="Dealdate" readonly="readonly" class="textfield"/></td>
+	  <td>处置人编号</td>
+	  <td><input type="text" name="DealerID" id="DealerID" readonly="readonly" class="textfield"/></td>
+	  <td>处置人</td>
+	  <td><input type="text" name="Dealer" id="Dealer" readonly="readonly" class="textfield"/></td>
+    </td>
+  </tr>
+  <tr bgcolor="#99BBE8">
+  	<td colspan="8" align="center">
+    <input name="addrow" type="button" class="button"  value="增加一行" style="WIDTH: 80;" onClick="$('#DetailsTwo').append($('#CloneNodeTr').clone().show())">&nbsp;
+    	<input type="button" value="保存" onclick="toSubmit(this)" class="button"/>&nbsp;
+      <input type="button" value="处置" onclick="toSubmit(this)" class="button"/>&nbsp;
+      <input type="button" value="关闭" onclick="$('#addOneDiv').hide()" class="button"/>&nbsp;
+    </td>
+  </tr>
+</table>
+</form>
+</div>
+<div id="listDiv" style="width:100%;top:0;left:20;display:none;background-color:#ffffff;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-x:hidden; overflow-y:scroll; z-index:550">
+</div>
+</BODY>
+</HTML>

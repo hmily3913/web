@@ -1,0 +1,310 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jqi.css">
+<link rel="stylesheet" href="../Images/jquery.autocomplete.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<script language="javascript" src="../Script/jquery.validate.js"></script>
+<script language="javascript" src="../Script/jquery-impromptu.3.1.js"></script>
+<script language="javascript" src="../Script/jquery.autocomplete.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+var productList;
+var Autooptions={
+	minChars:1,
+	max:50,
+	width:250,
+	mustMatch: true,
+	matchContains:true,
+	formatItem:function(row,i,max){
+		return i+"/"+max+": \""+row.MaterialName+"\""+" ["+row.Unit+"]["+row.Price+"]";
+	},
+	formatMatch:function(row,i,max){return row.MaterialName;},
+	formatResult:function(row){
+		return row.MaterialName;
+	}
+};
+function initAutoComplete(data){
+	productList=data;
+}
+function setValue(obj){
+	$(obj).autocomplete(productList,Autooptions);
+	$(obj).result(function(event,row, formatted){
+		if(row){
+			$('[name=MaterialId]',obj.parentNode.parentNode).val(row.SerialNum);
+			$('[name=Unit]',obj.parentNode.parentNode).val(row.Unit);
+			$('[name=InOutPrice]',obj.parentNode.parentNode).val(row.Price);
+			$('[name=StockQty]',obj.parentNode.parentNode).val(row.StockQty);
+		}
+		});
+}
+$(function(){
+	var yestoday=showdate(0);
+	$('#InOutDate').val(yestoday);
+
+	$.getJSON('StockInOutDetails.asp?showType=getInfo',null,initAutoComplete);
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'StockInOutDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: 'ID', name : 'SerialNum', width : 30, sortable : true, align: 'left'},
+	{display: '出入库日期', name : 'InOutDate', width : 80, sortable : true, align: 'left'},
+	{display: '出入库类型', name : 'InOutType', width : 80, sortable : true, align: 'left'},
+	{display: '物料编号', name : 'MaterialId', width : 10, sortable : false, hide: true,toggle:false},
+	{display: '物料名称', name : 'MaterialName', width : 80, sortable : true, align: 'left'},
+	{display: '单位', name : 'Unit', width : 50, sortable : true, align: 'left'},
+	{display: '库存', name : 'StockQty', width : 50, sortable : true, align: 'left'},
+	{display: '价格', name : 'InOutPrice', width : 60, sortable : true, align: 'left'},
+	{display: '数量', name : 'InOutQty', width : 60, sortable : true, align: 'left'},
+	{display: '审核', name : 'CheckFlag', width : 20, sortable : true, align: 'left'},
+	{display: '备注', name : 'Remark', width : 200, sortable : true, align: 'left'},
+	{display: '登记人', name : 'Biller', width : 60, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '审核',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '月报表',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '物料名称', name : 'b.MaterialName', isdefault: true},
+		{display: '出入库类型', name : 'a.InOutType'},
+		{display: '出入库日期', name : 'a.InOutDate'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "a.SerialNum",
+	sortorder: "desc",
+	singleSelect: false,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '物料出入管理',
+	showTableToggleBtn: true,
+	showcheckbox: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		if($(rowData).data(("CheckFlag"))=="True")alert('已审核不允许编辑');
+		else{
+			$('#TbDetails tr:gt(1)').remove();
+			$('#TbDetails').append($('#CloneNodeTr').clone().show());
+			$('input[name=SerialNum]',$('#TbDetails tr:last')).val($(rowData).data(("SerialNum")));
+			$('#InOutType').val($(rowData).data(("InOutType")));
+			$('#InOutDate').val($(rowData).data(("InOutDate")));
+			$('input[name=MaterialId]',$('#TbDetails tr:last')).val($(rowData).data(("MaterialId")));
+			$('input[name=MaterialName]',$('#TbDetails tr:last')).val($(rowData).data(("MaterialName")));
+			$('input[name=Unit]',$('#TbDetails tr:last')).val($(rowData).data(("Unit")));
+			$('input[name=InOutQty]',$('#TbDetails tr:last')).val($(rowData).data(("InOutQty")));
+			$('input[name=InOutPrice]',$('#TbDetails tr:last')).val($(rowData).data(("InOutPrice")));
+			$('input[name=StockQty]',$('#TbDetails tr:last')).val($(rowData).data(("StockQty")));
+			$('input[name=Remark]',$('#TbDetails tr:last')).val($(rowData).data(("Remark")));
+			$("#addDiv").show("slow");
+			$('#detailType').val('Edit');
+		}
+	}
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要删除单号为：' + AllSNum + ' 的记录?')){
+				  $.post('StockInOutDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":AllSNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#detailType').val('AddNew');
+				$('#TbDetails tr:gt(1)').remove();
+				$("#addDiv").show("slow");
+			}			
+		else if (com=='审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要签收单号为：' + AllSNum + ' 的记录?')){
+				  $.post('StockInOutDetails.asp?showType=DataProcess&detailType=Check',{"SerialNum":AllSNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}			
+		else if (com=='反审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var AllSNum="";
+				$('.trSelected', grid).each(function(i,fieldone){
+					AllSNum=AllSNum+fieldone.id.replace("row","")+",";
+				});
+				AllSNum=AllSNum.substr(0,AllSNum.length-1);
+				if (confirm('确定要通知单号为：' + AllSNum + ' 的记录?')){
+				  $.post('StockInOutDetails.asp?showType=DataProcess&detailType=unCheck',{"SerialNum":AllSNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}			
+		else if (com=='月报表')
+			{
+				
+				var txt='请选择年份：<select id="FYear" name="FYear"><option value="2011">2011</option><option value="2012">2012</option><option value="2013">2013</option></select><br/><br/>请选择月份:';
+				txt+='<select id="Month" name="Month">';
+				txt+='<option value="1">01</option>';
+				txt+='<option value="2">02</option>';
+				txt+='<option value="3">03</option>';
+				txt+='<option value="4">04</option>';
+				txt+='<option value="5">05</option>';
+				txt+='<option value="6">06</option>';
+				txt+='<option value="7">07</option>';
+				txt+='<option value="8">08</option>';
+				txt+='<option value="9">09</option>';
+				txt+='<option value="10">10</option>';
+				txt+='<option value="11">11</option>';
+				txt+='<option value="12">12</option>';
+				txt+='</select><br/><br/>';
+				$.prompt(txt,{
+					buttons: { 查看: '0'},
+					submit:function(v,m,f){ 
+							$('#listDiv').load("StockInOutDetails.asp #listtable",{
+								showType:'Excel',
+								Year:f.FYear,
+								Month:f.Month
+							 },function(response, status, xhr){
+								if (status =="success") {
+									$.prompt.close();
+									$("#listDiv").show("slow");
+								}	
+							});
+							return false; 
+					 }
+				 });
+			}			
+	}
+
+function getInfop(obj){
+  if($(obj).val()=='')return false;
+	$.get("StockInOutDetails.asp", { showType: "getInfo",detailType: 'Peron', InfoID: $(obj).val(),department:$('select[name=SendToDepartment]',obj.parentNode.parentNode).val() },
+	   function(data){
+			 if(data.indexOf("###")==-1){alert(data);$(obj).val('');}
+			 else{
+				$('input[name=ReceiverID]',obj.parentNode.parentNode).val(data.split('###')[0]);
+				$('input[name=ReceiverName]',obj.parentNode.parentNode).val(data.split('###')[1]);
+			 }
+	   });
+}
+function toSubmit(obj){
+	obj.disabled = true;
+			$.post('StockInOutDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+				if(data.indexOf("###")==-1) alert(data);
+			else $("#flex1").flexReload();
+	obj.disabled = false;
+			});
+			$("#addDiv").hide("slow");
+			$("#addDiv").css("z-index","500");
+}
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;">
+ <form id="AddForm" name="AddForm" style="margin:0; padding:0 ">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="$('#addDiv').hide('slow').css('z-index','500');" >&nbsp;<strong>物料出入管理</strong></font></td>
+  </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="left" class="toolbar">
+日期：<input type="text" name="InOutDate" id="InOutDate" class="required dateISO textfield" style="width:120px;" value=""  onfocus="$(this).datepick({dateFormat: 'yyyy-mm-dd'})" />&nbsp;
+出入库类型：<select name="InOutType" id="InOutType"><option value="购入">购入</option><option value="售出">售出</option></select>
+	  </td>
+	</tr>
+
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+		<table width="100%" border="0" id="editDetails" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+		  <tbody id="TbDetails">
+		  <tr height="24">
+			<td width="12.5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>物料名称</strong></font></td>
+			<td width="12.5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>单位</strong></font></td>
+			<td width="12.5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>库存</strong></font></td>
+			<td width="12.5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>价格</strong></font></td>
+			<td width="12.5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>数量</strong></font></td>
+			<td width="12.5%" bgcolor="#8DB5E9"><font color="#FFFFFF"><strong>备注</strong></font></td>
+			<td width="12.5%" bgcolor="#8DB5E9"><strong><font color="#FFFFFF">操作</font></strong></td>
+		  </tr>
+		  <tr bgColor="#EBF2F9" id="CloneNodeTr" style="display:none;" >
+			<td><input type="hidden" name="SerialNum" /><input type="hidden" name="MaterialId" /><input type="text" name="MaterialName" class="textfield" onfocus="setValue(this)"/></td>
+			<td><input type="text" name="Unit" class="textfield" readonly="readonly"/></td>
+			<td><input type="text" name="StockQty" class="textfield" readonly="readonly"/></td>
+			<td><input type="text" name="InOutPrice" class="number textfield" value="0" onblur="return checkNum(this)"/></td>
+			<td><input type="text" name="InOutQty" class="number textfield" value="0" onblur="return checkNum(this)"/></td>
+			<td><input type="text" name="Remark" class="textfield"/></td>
+			<td align="center"><input type="button" onClick="$(this).parent().parent().hide();$(this).next().val(1);" style="background:no-repeat center url(../Images/delete.gif);width:40px;" /><input type="hidden" name="DeleteFlag" id="DeleteFlag" value="0"></td>
+		  </tr>
+		  </tbody>
+		</table>
+		</td>
+  </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+    <input name="addrow" type="button" class="button"  value="增加一行" style="WIDTH: 80;" onClick="$('#TbDetails').append($('#CloneNodeTr').clone().show())">&nbsp;
+			<input name="submitSaveAdd" type="button" class="submit button"  value="保存" style="WIDTH: 80;" onclick="toSubmit(this)">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="$('#addDiv').hide('slow').css('z-index','500');">&nbsp;
+	  </td>
+	</tr>
+</table>
+</form>
+</div>
+<div id="listDiv" style="width:100%;top:0;left:20;display:none;background-color:#ffffff;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-x:hidden; overflow-y:scroll; z-index:550">
+</div>
+</BODY>
+</HTML>

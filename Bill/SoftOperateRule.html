@@ -1,0 +1,340 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<head>
+<TITLE>欢迎进入系统后台</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+<link rel="stylesheet" href="../Images/CssAdmin.css">
+<link rel="stylesheet" href="../Images/flexigrid.bbit.css">
+<link rel="stylesheet" href="../Images/jquery.datepick.css">
+<script language="javascript" src="../Script/Admin.js"></script>
+<script language="javascript" src="../Script/jquery-1.5.2.min.js"></script>
+<script language="javascript" src="../Script/flexigrid.pack.js"></script>
+<script language="javascript" src="../Script/jquery.form.js"></script>
+<script language="javascript" src="../Script/jquery.datepick.pack.js"></script>
+<script language="javascript" src="../Script/jquery.datepick-zh-CN.js"></script>
+<script language="javascript" src="../Script/xheditor-zh-cn.js"></script>
+<script language="javascript" src="../Script/jquery.easydrag.js"></script>
+<style type="text/css">
+html{
+margin:0;
+padding:0;
+background-color:#333;
+font: 12px Arial, Helvetica, sans-serif;}
+body{
+margin:0 auto 0 auto;
+padding:20px;
+background-color:#eee;}
+h1{margin-top:-10px;}
+hr{margin:20px 0;}
+</style>
+</head>
+<body>
+<table id="flex1" style="display:none"></table>
+<script language="javascript">
+$(function(){
+	$('#addDiv').easydrag(); 
+	$("#addDiv").setHandler("formove"); 
+});
+$("#flex1").flexigrid
+	(
+	{
+	url: 'SoftOperateRuleDetails.asp?showType=DetailsList',
+	dataType: 'json',
+	colModel : [
+	{display: '单号', name : 'SerialNum', width : 50, sortable : true, align: 'left'},
+	{display: '规程名称', name : 'RuleName', width : 100, sortable : true, align: 'left'},
+	{display: '生效日期', name : 'EffectDate', width : 60, sortable : true, align: 'left'},
+	{display: '版本号', name:'n1',width : 30, sortable : true, align: 'left'},
+	{display: '所属平台', name : 'Platform', width : 40, sortable : true, align: 'left'},
+	{display: '所属模块', name : 'Module', width : 50, sortable : true, align: 'left'},
+	{display: '制定人', name : 'n4', width : 40, sortable : true, align: 'left'},
+	{display: '姓名', name : 'n5', width : 40, sortable : true, align: 'left'},
+	{display: '适用部门', name : 'ReceivDepartment', width : 60, sortable : true, align: 'left'},
+	{display: '会签人', name : 'n8', width : 50, sortable : true, align: 'left'},
+	{display: '上一版本', name : 'n9', width : 30, sortable : true, align: 'left'},
+	{display: '过期标志', name : 'n10', width : 30, sortable : true, align: 'left'},
+	{display: '审核标志', name : 'n11', width : 30, sortable : true, align: 'left'},
+	{display: '制单人', name : 'n22', width : 40, sortable : true, align: 'left'}
+		],
+	buttons : [
+		{name: '增加',  onpress : test},
+		{separator: true},
+		{name: '维护',  onpress : test},
+		{separator: true},
+		{name: '删除',  onpress : test},
+		{separator: true},
+		{name: '审核',  onpress : test},
+		{separator: true},
+		{name: '会签',  onpress : test},
+		{separator: true},
+		{name: '变更',  onpress : test},
+		{separator: true}
+		],
+	searchitems : [
+		{display: '规程名称', name : 'RuleName', isdefault: true},
+		{display: '所属平台', name : 'Platform'},
+		{display: '所属模块', name : 'Module'},
+		{display: '适用部门', name : 'ReceivDepartment'}
+		],
+	onRowDblclick:rowdbclick,
+	sortname: "SerialNum",
+	sortorder: "desc",
+	singleSelect: true,
+	striped:true,//
+	rp: 20,
+	usepager: true,
+	title: '软件操作规程管理',
+	showTableToggleBtn: true,
+	width:'100%',
+	height: 420
+	}
+	);
+	
+	function rowdbclick(rowData){
+		$('#AddForm').resetForm();
+		$('#SerialNum').val($(rowData).data("SerialNum"));
+		getInfo('SerialNum');
+		$('#EffectDate').datepick({dateFormat: 'yyyy-mm-dd'});
+		$("#addDiv").show("slow");
+		$('#detailType').val('Edit');
+	}
+	
+	function test(com,grid)
+	{
+		if (com=='删除')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要删除单号为：' + SNum + ' 的记录?')){
+				  $.post('SoftOperateRuleDetails.asp?showType=DataProcess&detailType=Delete',{"SerialNum":SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}
+		else if (com=='增加')
+			{
+				$('#AddForm').resetForm();
+				getInfo('Register');
+	$('#EffectDate').datepick({dateFormat: 'yyyy-mm-dd'});
+				$('#detailType').val('AddNew');
+				$("#addDiv").show("slow");
+			}			
+		else if (com=='维护')
+			{
+				$('#AddForm').resetForm();
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				$('#SerialNum').val($('.trSelected', grid).attr("id").replace("row",""));
+				getInfo('SerialNum');
+				$('#EffectDate').datepick({dateFormat: 'yyyy-mm-dd'});
+				$("#addDiv").show("slow");
+				$('#detailType').val('Edit');
+			}			
+		else if (com=='审核')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要审核单号为：' + SNum + ' 的记录?')){
+				  $.post('SoftOperateRuleDetails.asp?showType=DataProcess&detailType=Check',{"SerialNum":SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}			
+		else if (com=='会签')
+			{
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				var SNum=$('.trSelected', grid).attr("id").replace("row","");
+				if (confirm('确定要签署单号为：' + SNum + ' 的记录?')){
+				  $.post('SoftOperateRuleDetails.asp?showType=DataProcess&detailType=Sign',{"SerialNum":SNum},function(data){
+					if(data.indexOf("###")==-1) alert(data);
+					else $("#flex1").flexReload();
+				  });
+				}
+			}			
+		else if (com=='变更')
+			{
+				$('#AddForm').resetForm();
+				if($('.trSelected', grid).length==0){alert('请先选择一条记录再进行操作！');return false;}
+				if($('.trSelected', grid).children('[abbr=n11]').children().text()=='待审'){
+				  alert('当前记录未审核，可直接编辑，不需要变更！');
+				  return false;
+				}
+				$('#SerialNum').val($('.trSelected', grid).attr("id").replace("row",""));
+				getInfo('SerialNum');
+				$('#EffectDate').datepick({dateFormat: 'yyyy-mm-dd'});
+				$("#addDiv").show("slow");
+				$('#detailType').val('AddNew');
+				$('#OldVersion').val($('.trSelected', grid).children('[abbr=n1]').children().text());
+			}			
+	}
+
+function closead1(){
+  $("#addDiv").hide("slow");
+	$("#addDiv").css("z-index","500");
+}
+function getInfo(obj){
+//  if($("#"+obj).val()==''){alert("对应编号不能为空！");return false;}
+	$.get("SoftOperateRuleDetails.asp", { showType: "getInfo",detailType: obj, InfoID: $("#"+obj).val() },
+	   function(data){
+		 if(data.indexOf("###")==-1)alert(data);
+		 else{
+		   if(obj=="SerialNum"){
+			   var datajson=jQuery.parseJSON(data);//转换后的JSON对象
+			   $(':input',$('#AddForm')).each(function(i,fieldone){
+			     if(fieldone.id){
+//				   if(fieldone.id!='detailType')$('#'+fieldone.id).val('');
+				   if(fieldone.id.substr(0,2)=='RD'){
+					   document.getElementById(fieldone.id).checked=false;
+					   if(datajson.fieldValue[0].ReceivDepartment.indexOf($('#'+fieldone.id).val())>-1)
+					     document.getElementById(fieldone.id).checked=true;
+				   }
+				   if(datajson.fieldValue[0][fieldone.id]){
+					 $('#'+fieldone.id).val(datajson.fieldValue[0][fieldone.id]);
+				     if(fieldone.id=='RuleDescrib'){
+					   var xheditorval=$('#'+fieldone.id).val();
+					   editor=$('#RuleDescrib').xheditor();
+					   editor.setSource(xheditorval);
+					 }else if(fieldone.id=='Platform') select();
+				   }
+				 }
+			   });
+		   }else if(obj=="Register"||obj=="RegisterName"){
+		     $("#Register").val(data.split('###')[0]);
+		     $("#RegisterName").val(data.split('###')[1]);
+		   }
+		 }
+	   });
+}
+function toSubmit(){
+  $.post('SoftOperateRuleDetails.asp?showType=DataProcess',$("#AddForm").serialize(),function(data){
+    if(data.indexOf("###")==-1) alert(data);
+	else{
+	  $("#addDiv").hide("slow");
+		$("#addDiv").css("z-index","500");
+	  $("#flex1").flexReload();
+	}
+  });
+}
+//产生联动下拉框
+var   where   =   new   Array(3);
+function   comefrom(loca,locashi)   {   this.loca   =   loca;   this.locashi   =   locashi;   }
+where[0]=   new   comefrom("请选择平台！","请选择相应模块！");
+where[1]   =   new   comefrom("金蝶K3","|采购模块|销售模块|财务模块|生产模块|仓库模块|质检模块|系统模块|人资模块");
+where[2]   =   new   comefrom("蓝道ERP","|金蝶报表|工程模块|人资模块");
+where[3]   =   new   comefrom("资讯平台","|工作回复平台|工作单据平台|文件数据平台|报表系统");
+function   select()   {
+	with(document.getElementById('Platform'))   {   var   loca2   =   options[selectedIndex].value;   }
+	for(i   =   0;i   <   where.length;i   ++)   {
+		if   (where[i].loca   ==   loca2)   {
+			loca3   =   (where[i].locashi).split("|");
+			for(j   =   0;j   <   loca3.length;j++)   {   with(document.getElementById('Module'))   {   length   =   loca3.length;
+				options[j].text   =   loca3[j];   options[j].value   =   loca3[j];   var
+			loca4=options[selectedIndex].value;}}
+			break;
+		}}
+	}
+$(document).ready(function(){
+
+		with(document.getElementById('Platform'))   {
+			length   =   where.length;
+			for(k=0;k<where.length;k++)   {   options[k].text   =   where[k].loca;   options[k].value   =
+			where[k].loca;   }
+			options[selectedIndex].text   =   where[0].loca;   options[selectedIndex].value   =   where[0].loca;
+		}
+		with(document.getElementById('Module'))   {
+			loca3   =   (where[0].locashi).split("|");
+			length   =   loca3.length;
+			for(l=0;l<length;l++)   {   options[l].text   =   loca3[l];   options[l].value   =   loca3[l];   }
+			options[selectedIndex].text   =   loca3[0];   options[selectedIndex].value   =   loca3[0];
+		}
+});
+
+</script>
+<div id="addDiv" style="width:96%;height:'420px';top:0;left:20;display:none;background-color:#888888;position:absolute;marginTop:-75px;marginLeft:-150px;overflow-y: hidden; overflow-x: hidden;z-index:500">
+ <form id="AddForm" name="AddForm">
+<table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#99BBE8">
+  <tr>
+    <td height="20" width="100%" class="tablemenu" id="formove"><font color="#15428B"><img src="../images/close.jpg" border="0" align="absmiddle" onClick="javascript:closead1()" >&nbsp;<strong>软件操作规程管理维护</strong></font></td>
+  </tr>
+  <tr>
+    <td height="20" width="100%" bgcolor="#EBF2F9">
+	  <table width="100%" border="0" cellpadding="0" cellspacing="0" id=editNews>
+      <tr>
+        <td height="20" align="left" width="10%">单据号：</td>
+        <td WIDTH="15%">
+		<input name="SerialNum" type="text" class="textfield" id="SerialNum" value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left" width="10%">规程名称：</td>
+        <td  WIDTH="15%"><input name="RuleName" type="text" class="textfield" id="RuleName" value="" maxlength="100"></td>
+        <td height="20" align="left" width="10%">生效日期：</td>
+        <td  WIDTH="15%"><input name="EffectDate" type="text" class="textfield" id="EffectDate" value="" maxlength="100" onchange="checkDate(this)"></td>
+        <td height="20" align="left" width="10%">版本号：</td>
+        <td  WIDTH="15%"><input name="VersionNum" type="text" class="textfield" id="VersionNum" value="" maxlength="100"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">所属平台：</td>
+        <td >
+		<select name="Platform" id="Platform" onchange="select()">
+		</select>
+		</td>
+        <td height="20" align="left">所属模块：</td>
+        <td >		<select name="Module" id="Module">
+		</select>
+		</td>
+        <td height="20" align="left">制定人：</td>
+        <td><input name="Register" type="text" class="textfield" id="Register"  value="" maxlength="100" onblur="return getInfo('Register')"></td>
+        <td height="20" align="left">制定人姓名：</td>
+        <td><input name="RegisterName" type="text" class="textfield" id="RegisterName"  value="" maxlength="100" onblur="return getInfo('RegisterName')"></td>
+      </tr>
+      <tr>
+        <td height="20" align="left">适用部门：</td>
+        <td colspan="7">
+		  <input type="checkbox" name="RD1" id="RD1" value="财务部," ><label for="RD1">财务部</label>
+		  <input type="checkbox" name="RD2" id="RD2" value="总经办," ><label for="RD2">总经办</label>
+		  <input type="checkbox" name="RD3" id="RD3" value="一分厂," ><label for="RD3">一分厂</label>
+		  <input type="checkbox" name="RD4" id="RD4" value="二分厂," ><label for="RD4">二分厂</label>
+		  <input type="checkbox" name="RD5" id="RD5" value="三分厂," ><label for="RD5">三分厂</label>
+		  <input type="checkbox" name="RD6" id="RD6" value="营销部," ><label for="RD6">营销部</label>
+		  <input type="checkbox" name="RD7" id="RD7" value="采购部," ><label for="RD7">采购部</label>
+		  <input type="checkbox" name="RD8" id="RD8" value="工程部," ><label for="RD8">工程部</label>
+		  <input type="checkbox" name="RD9" id="RD9" value="生管部," ><label for="RD9">生管部</label>
+		  <input type="checkbox" name="RD10" id="RD10" value="仓储科," ><label for="RD10">仓储科</label>
+		  <input type="checkbox" name="RD11" id="RD11" value="品保部," ><label for="RD11">品保部</label>
+		  <input type="checkbox" name="RD12" id="RD12" value="生技部," ><label for="RD12">生技部</label>
+		  <input type="checkbox" name="RD13" id="RD13" value="人资部," ><label for="RD13">人资部</label>
+		  <input type="checkbox" name="RD14" id="RD14" value="娄桥," ><label for="RD14">娄桥</label>
+		  <input type="checkbox" name="RD15" id="RD15" value="蓝驰," ><label for="RD15">蓝驰</label>
+		  <input type="checkbox" name="RD16" id="RD16" value="蓝劲," ><label for="RD16">蓝劲</label>
+		</td>
+      </tr>
+      <tr>
+		<td colspan="8">
+		  <textarea name="RuleDescrib" id="RuleDescrib" class="xheditor {skin:'vista',width:'100%',height:'250',upImgUrl:'../Include/UpLoadAjax.asp?immediate=1'}"></textarea>
+		</td>
+		</tr> 
+      <tr>
+        <td height="20" align="left">上一版本：</td>
+        <td><input name="OldVersion" type="text" class="textfield" id="OldVersion"  value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left">登记人：</td>
+        <td><input name="Biller" type="text" class="textfield" id="Biller"  value="" maxlength="100" readonly="true"></td>
+        <td height="20" align="left">登记日期：</td>
+        <td><input name="BillDate" type="text" class="textfield" id="BillDate"  value="" maxlength="100" readonly="true"></td>
+        <td colspan="2">
+		</td>
+      </tr>
+	<tr bgcolor="#99BBE8" >
+	  <td align="center" colspan="8" class="toolbar">
+	  <input type="hidden" name="detailType" id="detailType" value="">
+			<input name="submitSaveAdd" type="button" class="button"  value="保存" style="WIDTH: 80;"  onClick="toSubmit(this)">&nbsp;
+			<input type="button" class="button"  value="关闭" style="WIDTH: 80;"  onClick="closead1()">&nbsp;
+	  </td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</form>
+
+</div>
+</BODY>
+</HTML>
